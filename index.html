@@ -1,0 +1,2428 @@
+<!DOCTYPE html>
+<!-- saved from url=(0094)file:///C:/Users/Meredith%20LaCasse/Downloads/Love_Wellness___Sales_Dashboard_4_22_2026_8.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Love Wellness — Sales Dashboard</title>
+<style>
+/* Fonts load from Google if online; fallback to system monospace/serif if offline */
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap');
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<style>
+:root{
+  --cream:#FAF0EB;
+  --blush:#F5C6D0;
+  --rose:#E8607A;
+  --magenta:#C0006A;
+  --deep:#1A1A1A;
+  --muted:#6B6B6B;
+  --line:#E8D8DC;
+  --white:#ffffff;
+  --sell-in:#3E7C1F;
+  --ecomm:#2E86AB;
+  --card:rgba(255,255,255,0.95);
+  --status-green:#3E7C1F;
+  --status-amber:#B8860B;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Mono',monospace;background:var(--cream);color:var(--deep);min-height:100vh;font-size:13px;}
+.header{background:#ffffff;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;border-bottom:3px solid var(--magenta);box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.logo{font-family:'Fraunces',serif;font-size:20px;font-weight:600;color:var(--rose);letter-spacing:0.04em;}
+.logo span{color:var(--magenta);font-style:italic;}
+.header-right{display:flex;align-items:center;gap:16px;}
+.header-meta{color:var(--muted);font-size:10px;letter-spacing:0.1em;}
+.reset-btn{padding:5px 12px;border:1px solid var(--line);border-radius:4px;background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.05em;transition:all 0.15s;}
+.reset-btn:hover{border-color:var(--rose);color:var(--rose);}
+.tabs{display:flex;background:#ffffff;padding:0 28px;border-bottom:1px solid var(--line);}
+.tab-btn{padding:10px 20px;border:none;background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;}
+.tab-btn:hover{color:var(--rose);}
+.tab-btn.active{color:var(--magenta);border-bottom-color:var(--magenta);}
+.app{display:flex;height:calc(100vh - 88px);}
+.sidebar{width:248px;min-width:248px;background:#ffffff;border-right:1px solid var(--line);overflow-y:auto;padding-bottom:32px;}
+.sidebar-section{border-bottom:1px solid var(--line);padding:13px 16px;}
+.sidebar-section:last-child{border-bottom:none;}
+.section-label{font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;display:block;}
+.toggle-group{display:flex;background:var(--cream);border-radius:6px;padding:3px;gap:2px;}
+.toggle-btn{flex:1;padding:5px 4px;border:none;background:transparent;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);transition:all 0.15s;text-align:center;}
+.toggle-btn.active{background:var(--rose);color:#ffffff;}
+.toggle-btn:hover:not(.active){background:var(--line);}
+.metric-toggle{display:flex;flex-direction:column;gap:4px;}
+.metric-btn{padding:6px 10px;border:1px solid var(--line);border-radius:5px;background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-align:left;transition:all 0.15s;}
+.metric-btn.active{border-color:var(--rose);background:#FFF0F3;color:var(--deep);font-weight:500;}
+.metric-btn:hover:not(.active){border-color:var(--muted);}
+.filter-list{display:flex;flex-direction:column;gap:2px;max-height:170px;overflow-y:auto;}
+.filter-chip{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:4px;cursor:pointer;user-select:none;transition:background 0.1s;}
+.filter-chip:hover{background:var(--cream);}
+.filter-chip input[type=checkbox]{accent-color:var(--rose);width:13px;height:13px;cursor:pointer;}
+.filter-chip label{cursor:pointer;font-size:11px;color:var(--deep);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.filter-row-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.select-all-btn{font-size:10px;color:var(--muted);cursor:pointer;text-decoration:underline;background:none;border:none;font-family:'DM Mono',monospace;}
+.select-all-btn:hover{color:var(--rose);}
+.search-box{width:100%;padding:6px 10px;border:1px solid var(--line);border-radius:5px;background:var(--cream);font-family:'DM Mono',monospace;font-size:11px;color:var(--deep);margin-bottom:6px;}
+.search-box:focus{outline:1px solid var(--rose);}
+.main{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:14px;}
+.panel{display:none;}
+.panel.active{display:flex;flex-direction:column;gap:14px;}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.kpi-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--rose);}
+.kpi-card:nth-child(2)::before{background:var(--sell-in);}
+.kpi-card:nth-child(3)::before{background:var(--ecomm);}
+.kpi-card:nth-child(4)::before{background:var(--blush);}
+.kpi-label{font-size:10px;letter-spacing:0.12em;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
+.kpi-value{font-family:'Fraunces',serif;font-size:26px;font-weight:600;color:var(--deep);line-height:1;}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:4px;}
+.kpi-yoy{font-size:11px;margin-top:3px;font-weight:500;}
+.kpi-yoy.pos{color:#5a9e6f;}
+.kpi-yoy.neg{color:#c45c5c;}
+.chart-card{background:#ffffff;border:1px solid var(--line);border-radius:10px;padding:16px 18px;}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.chart-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.chart-title{font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--deep);margin-bottom:2px;}
+.chart-subtitle{font-size:10px;color:var(--muted);margin-bottom:10px;letter-spacing:0.06em;text-transform:uppercase;}
+.chart-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.time-btn{padding:3px 9px;border:1px solid var(--line);border-radius:4px;background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.time-btn.active{background:var(--rose);border-color:var(--rose);color:white;}
+.table-card{background:#ffffff;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+.table-header-row{padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+thead tr{background:var(--cream);}
+thead th{padding:8px 12px;text-align:right;font-size:10px;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;white-space:nowrap;cursor:pointer;user-select:none;}
+thead th:first-child{text-align:left;}
+thead th:hover{color:var(--deep);}
+thead th.sorted{color:var(--rose);}
+tbody tr{border-bottom:1px solid var(--line);transition:background 0.1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:#FFF5F7;}
+tbody td{padding:8px 12px;text-align:right;color:var(--deep);}
+tbody td:first-child{text-align:left;font-weight:500;}
+.group-btn{padding:3px 9px;border:1px solid var(--line);border-radius:4px;background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);transition:all 0.15s;}
+.group-btn.active{background:var(--rose);border-color:var(--rose);color:#ffffff;}
+.group-btn:hover:not(.active){border-color:var(--muted);}
+.group-select{display:flex;gap:4px;flex-wrap:wrap;}
+
+/* ---- HEATMAP ---- */
+.hm-card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+
+/* INLINE CONTROLS BAR */
+.hm-toolbar{
+  display:flex;align-items:center;gap:0;
+  border-bottom:1px solid var(--line);
+  flex-wrap:wrap;
+}
+.hm-toolbar-group{
+  display:flex;align-items:center;gap:6px;
+  padding:9px 14px;
+  border-right:1px solid var(--line);
+  flex-wrap:wrap;
+}
+.hm-toolbar-group:last-child{border-right:none;}
+.ctrl-label{font-size:9px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;white-space:nowrap;}
+
+.pill-group{display:flex;background:var(--cream);border-radius:5px;padding:2px;gap:2px;}
+.pill-btn{padding:4px 10px;border:none;background:transparent;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);transition:all 0.12s;white-space:nowrap;}
+.pill-btn.active{background:var(--rose);color:#ffffff;}
+.pill-btn.rose.active{background:var(--magenta);color:white;}
+.pill-btn:hover:not(.active){background:var(--line);}
+
+.tf-scroll{display:flex;gap:4px;flex-wrap:wrap;}
+.tf-btn{padding:3px 8px;border:1px solid var(--line);border-radius:4px;background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap;transition:all 0.12s;}
+.tf-btn.active{background:var(--deep);border-color:var(--deep);color:var(--cream);}
+.tf-btn:hover:not(.active){border-color:var(--muted);color:var(--deep);}
+
+/* CUSTOMER PILLS */
+.cust-pill-wrap{display:flex;gap:4px;flex-wrap:wrap;padding:8px 14px;border-bottom:1px solid var(--line);}
+.cust-pill{padding:3px 10px;border:1px solid var(--line);border-radius:12px;background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);transition:all 0.12s;}
+.cust-pill.active{background:var(--deep);border-color:var(--deep);color:var(--cream);}
+.cust-pill:hover:not(.active){border-color:var(--rose);color:var(--rose);}
+
+.heatmap-wrap{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 320px);}
+.heatmap-table{border-collapse:collapse;font-size:11px;white-space:nowrap;}
+
+/* sticky header row */
+.heatmap-table th{padding:5px 8px;font-size:9px;letter-spacing:0.08em;color:var(--muted);text-transform:uppercase;position:sticky;top:0;background:var(--white);z-index:2;border-bottom:2px solid var(--line);}
+.heatmap-table th.row-header{left:0;z-index:3;text-align:left;min-width:180px;max-width:220px;border-right:1px solid var(--line);}
+.heatmap-table th.col-header{text-align:center;min-width:64px;border-right:1px solid #f0e8e2;}
+.heatmap-table th.corner{top:0;left:0;z-index:4;border-right:1px solid var(--line);}
+
+/* data cells */
+.heatmap-table td{padding:4px 6px;text-align:center;border-right:1px solid #f3ece7;border-bottom:1px solid #f3ece7;min-width:64px;cursor:default;transition:filter 0.1s;}
+.heatmap-table tr:hover td{filter:brightness(0.91);}
+.heatmap-table td:first-child{position:sticky;left:0;z-index:1;background:var(--white) !important;text-align:left;border-right:1px solid var(--line);padding-left:0;min-width:180px;max-width:220px;}
+.heatmap-table tr:hover td:first-child{filter:none;background:#f7efeb !important;}
+
+/* GROUP ROW */
+.heatmap-table tr.group-row td{background:#FFF5F7 !important;border-bottom:1px solid var(--line) !important;}
+.heatmap-table tr.group-row:hover td{filter:none;}
+.heatmap-table tr.group-row td:first-child{background:#FFE8EF !important;font-weight:600;}
+.heatmap-table tr.group-row:hover td:first-child{background:#FFDBEA !important;}
+
+/* CHILD ROW (indented items under group) */
+.heatmap-table tr.child-row td:first-child{padding-left:0;}
+.heatmap-table tr.child-row.hidden{display:none;}
+
+/* EXPAND BUTTON */
+.expand-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:18px;height:18px;margin-right:6px;
+  border:1px solid var(--line);border-radius:3px;
+  background:var(--white);cursor:pointer;
+  font-size:10px;color:var(--muted);
+  vertical-align:middle;flex-shrink:0;
+  transition:all 0.12s;
+  font-family:monospace;
+  line-height:1;
+}
+.expand-btn:hover{background:var(--rose);border-color:var(--rose);color:white;}
+.row-label{display:inline-flex;align-items:center;padding-left:10px;width:100%;overflow:hidden;}
+.row-label span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.child-label{padding-left:34px !important;}
+.child-label .row-label{padding-left:0;}
+
+/* TOTAL ROW */
+.heatmap-table tr.total-row td{background:#f5ede8 !important;font-weight:600;border-top:2px solid var(--line);}
+.heatmap-table tr.total-row td:first-child{background:#ede0d8 !important;}
+.heatmap-table tr.total-row:hover td{filter:none;}
+
+.hm-val{font-size:10px;font-weight:500;}
+.hm-legend{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);padding:8px 14px 12px;}
+.hm-legend-gradient{width:100px;height:8px;border-radius:4px;background:linear-gradient(to right,#fdf5f1,#e8856a,#a0371e);}
+
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+.hm-tooltip{position:fixed;background:var(--deep);color:var(--cream);padding:10px 14px;border-radius:8px;font-size:11px;pointer-events:none;z-index:9999;display:none;max-width:260px;line-height:1.7;box-shadow:0 4px 20px rgba(0,0,0,0.25);}
+.hm-tooltip strong{color:var(--blush);display:block;margin-bottom:3px;font-size:12px;}
+.divider-v{width:1px;height:18px;background:var(--line);}
+
+.refresh-btn{
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.04em;
+  background:var(--magenta);color:#fff;border:none;border-radius:6px;
+  padding:7px 14px;cursor:pointer;text-transform:uppercase;
+}
+.refresh-btn:hover{opacity:.88;}
+.refresh-btn:disabled{opacity:.5;cursor:default;}
+.status-banner{
+  font-family:'DM Mono',monospace;font-size:12px;text-align:center;
+  padding:8px 16px;background:var(--blush);color:var(--deep);
+}
+.status-banner.error{background:#F5D1D1;color:#8A1F1F;}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">love <span>wellness</span></div>
+  <div class="header-right">
+    <div class="header-meta" id="last-updated">Loading…</div>
+    <button class="refresh-btn" id="refresh-btn">⟳ Refresh Data</button>
+    <button class="reset-btn" onclick="resetAll()">↺ RESET</button>
+  </div>
+</header>
+<div class="status-banner" id="loading-banner" style="display:none">Loading sales data…</div>
+<div class="status-banner error" id="error-banner" style="display:none"></div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab(&#39;overview&#39;)" id="tab-overview">Overview</button>
+  <button class="tab-btn" onclick="showTab(&#39;by-customer&#39;)" id="tab-by-customer">By Customer</button>
+  <button class="tab-btn" onclick="showTab(&#39;by-category&#39;)" id="tab-by-category">By Category</button>
+  <button class="tab-btn" onclick="showTab(&#39;unit-econ&#39;)" id="tab-unit-econ">Unit Economics</button>
+  <button class="tab-btn" onclick="showTab(&#39;funnel&#39;)" id="tab-funnel">Funnel</button>
+  <button class="tab-btn" onclick="showTab(&#39;hero-sku&#39;)" id="tab-hero-sku">★ Hero SKUs</button>
+
+</div>
+
+<div class="app">
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <span class="section-label">Metric</span>
+    <div class="metric-toggle">
+      <button class="metric-btn active" onclick="setMetric(&#39;net&#39;)" id="m-net">Net Sales ($)</button>
+      <button class="metric-btn" onclick="setMetric(&#39;gross&#39;)" id="m-gross">Gross Sales ($)</button>
+      <button class="metric-btn" onclick="setMetric(&#39;units&#39;)" id="m-units">Units</button>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <span class="section-label">Channel</span>
+    <div class="toggle-group">
+      <button class="toggle-btn active" onclick="setChannel(&#39;all&#39;)" id="ch-all">All</button>
+      <button class="toggle-btn" onclick="setChannel(&#39;retail&#39;)" id="ch-retail">Retail</button>
+      <button class="toggle-btn" onclick="setChannel(&#39;ecomm&#39;)" id="ch-ecomm">eComm</button>
+    </div>
+  </div>
+  <div class="sidebar-section" id="sell-type-section">
+    <span class="section-label">Sell Type (Retail)</span>
+    <div class="toggle-group">
+      <button class="toggle-btn" onclick="setSellType(&#39;thru&#39;)" id="st-thru">Sell Thru</button>
+      <button class="toggle-btn active" onclick="setSellType(&#39;in&#39;)" id="st-in">Sell In</button>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <span class="section-label">Year</span>
+    <div id="year-filters" class="filter-list"></div>
+  </div>
+  <div class="sidebar-section">
+    <span class="section-label">Quarter</span>
+    <div id="quarter-filters" class="filter-list"></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="filter-row-header">
+      <span class="section-label" style="margin:0">Customer</span>
+      <button class="select-all-btn" id="store-all-btn" onclick="toggleAllStores()">deselect all</button>
+    </div>
+    <div id="store-filters" class="filter-list"></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="filter-row-header">
+      <span class="section-label" style="margin:0">Category</span>
+      <button class="select-all-btn" id="cat-all-btn" onclick="toggleAllCats()">deselect all</button>
+    </div>
+    <div id="cat-filters" class="filter-list"></div>
+  </div>
+  <div class="sidebar-section">
+    <span class="section-label">Search Item</span>
+    <input class="search-box" type="text" placeholder="Search products..." id="item-search" oninput="renderAll()">
+  </div>
+</aside>
+
+<main class="main">
+
+<!-- ======== TAB 1: OVERVIEW ======== -->
+<div class="panel active" id="panel-overview">
+  <!-- Period + Comparison Controls Bar -->
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:white;border:1px solid var(--line);border-radius:10px;padding:10px 16px;margin-bottom:2px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:10px;letter-spacing:0.12em;color:var(--muted);text-transform:uppercase">Period</span>
+      <div class="pill-group" id="ov-period-grp">
+        <button class="pill-btn active" data-val="cur_month" onclick="setOvPeriod(&#39;cur_month&#39;)">Current Month</button>
+        <button class="pill-btn" data-val="cur_quarter" onclick="setOvPeriod(&#39;cur_quarter&#39;)">Current Quarter</button>
+        <button class="pill-btn" data-val="ytd" onclick="setOvPeriod(&#39;ytd&#39;)">YTD</button>
+        <button class="pill-btn" data-val="l12m" onclick="setOvPeriod(&#39;l12m&#39;)">L12M</button>
+      </div>
+    </div>
+    <div style="width:1px;height:18px;background:var(--line)"></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:10px;letter-spacing:0.12em;color:var(--muted);text-transform:uppercase">Compare</span>
+      <div class="pill-group" id="ov-comp-grp">
+        <button class="pill-btn active" data-val="py" onclick="setOvComp(&#39;py&#39;)">PY (Prior Year)</button>
+        <button class="pill-btn" data-val="pm" onclick="setOvComp(&#39;pm&#39;)">PP (Prior Period)</button>
+      </div>
+    </div>
+    <div style="margin-left:auto;font-size:10px;color:var(--muted)" id="ov-period-label"></div>
+  </div>
+  <!-- KPI cards removed -->
+  <span id="kpi-net" style="display:none"></span>
+  <span id="kpi-gross" style="display:none"></span>
+  <span id="kpi-units" style="display:none"></span>
+  <span id="kpi-rows" style="display:none"></span>
+  <span id="kpi-net-yoy" style="display:none" class="kpi-yoy"></span>
+  <span id="kpi-gross-yoy" style="display:none" class="kpi-yoy"></span>
+  <span id="kpi-units-yoy" style="display:none" class="kpi-yoy"></span>
+  <span id="kpi-net-sub" style="display:none"></span>
+  <span id="kpi-gross-sub" style="display:none"></span>
+  <span id="kpi-rows-sub" style="display:none"></span>
+  <!-- Time axis selector shared across all 3 charts -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    <span style="font-size:10px;letter-spacing:0.12em;color:var(--muted);text-transform:uppercase">Time Axis</span>
+    <div style="display:flex;gap:3px">
+      <button class="time-btn" onclick="setTimeAxis(&#39;month&#39;)" id="t-month">Monthly</button>
+      <button class="time-btn active" onclick="setTimeAxis(&#39;quarter&#39;)" id="t-quarter">Quarterly</button>
+      <button class="time-btn" onclick="setTimeAxis(&#39;year&#39;)" id="t-year">Annual</button>
+    </div>
+  </div>
+
+  <!-- Chart 1: Total -->
+  <div class="chart-card" style="margin-bottom:12px">
+    <div class="chart-header">
+      <div><div class="chart-title">Performance Over Time — Total</div><div class="chart-subtitle" id="time-chart-subtitle-total">ALL CHANNELS · TOTAL</div></div>
+    </div>
+    <div style="position:relative;height:220px"><canvas id="timeChart-total" style="box-sizing: border-box; display: block; height: 220px; width: 1580px;" width="1580" height="220"></canvas></div>
+  </div>
+
+  <!-- Chart 2: eComm vs Retail -->
+  <div class="chart-card" style="margin-bottom:12px">
+    <div class="chart-header">
+      <div><div class="chart-title">Performance Over Time — eComm vs Retail</div><div class="chart-subtitle" id="time-chart-subtitle-ecomm">eCOMM vs RETAIL</div></div>
+    </div>
+    <div style="position:relative;height:220px"><canvas id="timeChart-ecomm" style="box-sizing: border-box; display: block; height: 220px; width: 1580px;" width="1580" height="220"></canvas></div>
+  </div>
+
+  <!-- Chart 3: All Channels -->
+  <div class="chart-card" style="margin-bottom:12px">
+    <div class="chart-header">
+      <div><div class="chart-title">Performance Over Time — All Channels</div><div class="chart-subtitle" id="time-chart-subtitle-channels">ALL CHANNELS BREAKOUT · ALL CHANNELS</div></div>
+      <div style="display:flex;gap:3px" id="all-channels-filter">
+        <button class="time-btn active" id="acf-both" onclick="setACFilter(&#39;both&#39;)">Both</button>
+        <button class="time-btn" id="acf-retail" onclick="setACFilter(&#39;retail&#39;)">Retail Only</button>
+        <button class="time-btn" id="acf-ecomm" onclick="setACFilter(&#39;ecomm&#39;)">eComm Only</button>
+      </div>
+    </div>
+    <div style="position:relative;height:220px"><canvas id="timeChart-channels" style="box-sizing: border-box; display: block; height: 220px; width: 1580px;" width="1580" height="220"></canvas></div>
+  </div>
+
+  <div class="chart-row">
+    <div class="chart-card"><div class="chart-title">By Customer</div><div class="chart-subtitle">RANKED BY METRIC</div><div style="position: relative; height: 320px;"><canvas id="storeChart" style="box-sizing: border-box; display: block; height: 320px; width: 764px;" width="764" height="320"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">By Category</div><div class="chart-subtitle">BREAKDOWN</div><div style="position:relative;height:210px"><canvas id="catChart" style="box-sizing: border-box; display: block; height: 210px; width: 764px;" width="764" height="210"></canvas></div></div>
+  </div>
+  <div class="table-card">
+    <div class="table-header-row">
+      <div><div class="chart-title">Pivot View</div><div class="chart-subtitle" style="margin:0">DRILL DOWN</div></div>
+      <div class="group-select">
+        <button class="group-btn active" onclick="setGroup(&#39;Customer&#39;)" id="g-Customer">Customer</button>
+        <button class="group-btn" onclick="setGroup(&#39;Item&#39;)" id="g-Item">Product</button>
+        <button class="group-btn" onclick="setGroup(&#39;Category&#39;)" id="g-Category">Category</button>
+        <button class="group-btn" onclick="setGroup(&#39;Franchise&#39;)" id="g-Franchise">Franchise</button>
+        <button class="group-btn" onclick="setGroup(&#39;YM&#39;)" id="g-YM">Month</button>
+        <button class="group-btn" onclick="setGroup(&#39;Quarter&#39;)" id="g-Quarter">Quarter</button>
+        <button class="group-btn" onclick="setGroup(&#39;Year&#39;)" id="g-Year">Year</button>
+      </div>
+    </div>
+    <div class="table-wrap" id="pivot-table"></div>
+  </div>
+</div>
+
+<!-- ======== TAB 2: BY CUSTOMER ======== -->
+<div class="panel" id="panel-by-customer">
+  <div class="hm-card">
+    <div class="chart-header" style="padding:14px 16px 0;margin:0">
+      <div>
+        <div class="chart-title">Monthly Sales by Customer</div>
+        <div class="chart-subtitle" style="margin-bottom:0">ROWS = GROUP · COLUMNS = MONTH · CLICK ROW TO EXPAND</div>
+      </div>
+    </div>
+
+    <!-- TOOLBAR ROW 1: metric + sell type + grouping -->
+    <div class="hm-toolbar">
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Metric</span>
+        <div class="pill-group" id="bc-metric-grp">
+          <button class="pill-btn active" data-val="net" onclick="setLocalMetric(&#39;bc&#39;,&#39;net&#39;)">Net $</button>
+          <button class="pill-btn" data-val="gross" onclick="setLocalMetric(&#39;bc&#39;,&#39;gross&#39;)">Gross $</button>
+          <button class="pill-btn" data-val="units" onclick="setLocalMetric(&#39;bc&#39;,&#39;units&#39;)">Units</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group" id="bc-selltype-grp" style="display:none">
+        <span class="ctrl-label">Retail</span>
+        <div class="pill-group">
+          <button class="pill-btn" data-val="thru" onclick="setLocalSellType(&#39;bc&#39;,&#39;thru&#39;)">Sell Thru</button>
+          <button class="pill-btn active" data-val="in" onclick="setLocalSellType(&#39;bc&#39;,&#39;in&#39;)">Sell In</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Channel</span>
+        <div class="pill-group" id="bc-chan-grp">
+          <button class="pill-btn active" data-val="all" onclick="setLocalChan(&#39;bc&#39;,&#39;all&#39;)">All</button>
+          <button class="pill-btn" data-val="retail" onclick="setLocalChan(&#39;bc&#39;,&#39;retail&#39;)">Retail</button>
+          <button class="pill-btn" data-val="ecomm" onclick="setLocalChan(&#39;bc&#39;,&#39;ecomm&#39;)">eComm</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Row groups</span>
+        <div class="pill-group" id="bc-rowgroup-grp">
+          <button class="pill-btn active" data-val="customer-category" onclick="setLocalRowGroup(&#39;bc&#39;,&#39;customer-category&#39;)">Customer → Category</button>
+          <button class="pill-btn" data-val="customer-item" onclick="setLocalRowGroup(&#39;bc&#39;,&#39;customer-item&#39;)">Customer → Product</button>
+          <button class="pill-btn" data-val="category-item" onclick="setLocalRowGroup(&#39;bc&#39;,&#39;category-item&#39;)">Category → Product</button>
+          <button class="pill-btn" data-val="customer-department" onclick="setLocalRowGroup(&#39;bc&#39;,&#39;customer-department&#39;)" title="Department data only available for Target &amp; Walmart">Customer → Department</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOLBAR ROW 2: timeframe -->
+    <div class="hm-toolbar">
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Period</span>
+        <div class="pill-group" id="bc-period-grp">
+          <button class="pill-btn active" data-val="cur_month" onclick="setSharedPeriod(&#39;cur_month&#39;)">Current Month</button>
+          <button class="pill-btn" data-val="cur_quarter" onclick="setSharedPeriod(&#39;cur_quarter&#39;)">Current Quarter</button>
+          <button class="pill-btn" data-val="ytd" onclick="setSharedPeriod(&#39;ytd&#39;)">YTD</button>
+          <button class="pill-btn" data-val="l12m" onclick="setSharedPeriod(&#39;l12m&#39;)">L12M</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer filter pills -->
+    <div class="cust-pill-wrap" id="bc-cust-pills"></div>
+
+    <div class="heatmap-wrap" id="bc-heatmap-wrap"></div>
+    <div class="hm-legend">
+      <span style="color:var(--muted);font-size:10px">Low</span>
+      <div class="hm-legend-gradient"></div>
+      <span style="color:var(--muted);font-size:10px">High</span>
+      <span style="margin-left:10px;color:var(--muted);font-size:10px">— intensity relative to row max · click + to expand</span>
+    </div>
+  </div>
+</div>
+
+<!-- ======== TAB 3: BY CATEGORY ======== -->
+<div class="panel" id="panel-by-category">
+  <div class="hm-card">
+    <div class="chart-header" style="padding:14px 16px 0;margin:0">
+      <div>
+        <div class="chart-title">Monthly Sales by Category</div>
+        <div class="chart-subtitle" style="margin-bottom:0">ROWS = GROUP · COLUMNS = MONTH · CLICK ROW TO EXPAND</div>
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="hm-toolbar">
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Metric</span>
+        <div class="pill-group" id="cat-metric-grp">
+          <button class="pill-btn active" data-val="net" onclick="setLocalMetric(&#39;cat&#39;,&#39;net&#39;)">Net $</button>
+          <button class="pill-btn" data-val="gross" onclick="setLocalMetric(&#39;cat&#39;,&#39;gross&#39;)">Gross $</button>
+          <button class="pill-btn" data-val="units" onclick="setLocalMetric(&#39;cat&#39;,&#39;units&#39;)">Units</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group" id="cat-selltype-grp" style="display:none">
+        <span class="ctrl-label">Retail</span>
+        <div class="pill-group">
+          <button class="pill-btn" data-val="thru" onclick="setLocalSellType(&#39;cat&#39;,&#39;thru&#39;)">Sell Thru</button>
+          <button class="pill-btn active" data-val="in" onclick="setLocalSellType(&#39;cat&#39;,&#39;in&#39;)">Sell In</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Channel</span>
+        <div class="pill-group" id="cat-chan-grp">
+          <button class="pill-btn active" data-val="all" onclick="setLocalChan(&#39;cat&#39;,&#39;all&#39;)">All</button>
+          <button class="pill-btn" data-val="retail" onclick="setLocalChan(&#39;cat&#39;,&#39;retail&#39;)">Retail</button>
+          <button class="pill-btn" data-val="ecomm" onclick="setLocalChan(&#39;cat&#39;,&#39;ecomm&#39;)">eComm</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Row groups</span>
+        <div class="pill-group" id="cat-rowgroup-grp">
+          <button class="pill-btn active" data-val="category-customer" onclick="setLocalRowGroup(&#39;cat&#39;,&#39;category-customer&#39;)">Category → Customer</button>
+          <button class="pill-btn" data-val="category-item" onclick="setLocalRowGroup(&#39;cat&#39;,&#39;category-item&#39;)">Category → Product</button>
+          <button class="pill-btn" data-val="franchise-item" onclick="setLocalRowGroup(&#39;cat&#39;,&#39;franchise-item&#39;)">Franchise → Product</button>
+          <button class="pill-btn" data-val="franchise-customer" onclick="setLocalRowGroup(&#39;cat&#39;,&#39;franchise-customer&#39;)">Franchise → Customer</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="hm-toolbar">
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Period</span>
+        <div class="pill-group" id="cat-period-grp">
+          <button class="pill-btn active" data-val="cur_month" onclick="setSharedPeriod(&#39;cur_month&#39;)">Current Month</button>
+          <button class="pill-btn" data-val="cur_quarter" onclick="setSharedPeriod(&#39;cur_quarter&#39;)">Current Quarter</button>
+          <button class="pill-btn" data-val="ytd" onclick="setSharedPeriod(&#39;ytd&#39;)">YTD</button>
+          <button class="pill-btn" data-val="l12m" onclick="setSharedPeriod(&#39;l12m&#39;)">L12M</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="heatmap-wrap" id="cat-heatmap-wrap"></div>
+    <div class="hm-legend">
+      <span style="color:var(--muted);font-size:10px">Low</span>
+      <div class="hm-legend-gradient"></div>
+      <span style="color:var(--muted);font-size:10px">High</span>
+      <span style="margin-left:10px;color:var(--muted);font-size:10px">— intensity relative to row max · click + to expand</span>
+    </div>
+  </div>
+</div>
+
+<!-- ======== TAB: UNIT ECONOMICS ======== -->
+<div class="panel" id="panel-unit-econ">
+  <div class="hm-card">
+    <div class="chart-header" style="padding:14px 16px 0;margin:0">
+      <div>
+        <div class="chart-title">Cost &amp; SRP by SKU</div>
+        <div class="chart-subtitle" style="margin-bottom:0">ROWS = GROUP · COLUMNS = MONTH · CLICK ROW TO EXPAND · VALUES ARE PER-UNIT, WEIGHTED BY UNITS SOLD</div>
+      </div>
+    </div>
+
+    <div class="hm-toolbar">
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Metric</span>
+        <div class="pill-group" id="ue-metric-grp">
+          <button class="pill-btn active" data-val="cost" onclick="setLocalMetric(&#39;ue&#39;,&#39;cost&#39;)">Cost / Unit</button>
+          <button class="pill-btn" data-val="srp" onclick="setLocalMetric(&#39;ue&#39;,&#39;srp&#39;)">SRP</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group" id="ue-selltype-grp" style="display:none">
+        <span class="ctrl-label">Retail</span>
+        <div class="pill-group">
+          <button class="pill-btn" data-val="thru" onclick="setLocalSellType(&#39;ue&#39;,&#39;thru&#39;)">Sell Thru</button>
+          <button class="pill-btn active" data-val="in" onclick="setLocalSellType(&#39;ue&#39;,&#39;in&#39;)">Sell In</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Channel</span>
+        <div class="pill-group" id="ue-chan-grp">
+          <button class="pill-btn active" data-val="all" onclick="setLocalChan(&#39;ue&#39;,&#39;all&#39;)">All</button>
+          <button class="pill-btn" data-val="retail" onclick="setLocalChan(&#39;ue&#39;,&#39;retail&#39;)">Retail</button>
+          <button class="pill-btn" data-val="ecomm" onclick="setLocalChan(&#39;ue&#39;,&#39;ecomm&#39;)">eComm</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Row groups</span>
+        <div class="pill-group" id="ue-rowgroup-grp">
+          <button class="pill-btn active" data-val="item-customer" onclick="setLocalRowGroup(&#39;ue&#39;,&#39;item-customer&#39;)">SKU → Customer</button>
+          <button class="pill-btn" data-val="customer-item" onclick="setLocalRowGroup(&#39;ue&#39;,&#39;customer-item&#39;)">Customer → SKU</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="hm-toolbar">
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Period</span>
+        <div class="pill-group" id="ue-period-grp">
+          <button class="pill-btn active" data-val="cur_month" onclick="setSharedPeriod(&#39;cur_month&#39;)">Current Month</button>
+          <button class="pill-btn" data-val="cur_quarter" onclick="setSharedPeriod(&#39;cur_quarter&#39;)">Current Quarter</button>
+          <button class="pill-btn" data-val="ytd" onclick="setSharedPeriod(&#39;ytd&#39;)">YTD</button>
+          <button class="pill-btn" data-val="l12m" onclick="setSharedPeriod(&#39;l12m&#39;)">L12M</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="heatmap-wrap" id="ue-heatmap-wrap"></div>
+    <div class="hm-legend">
+      <span style="color:var(--muted);font-size:10px">Low</span>
+      <div class="hm-legend-gradient"></div>
+      <span style="color:var(--muted);font-size:10px">High</span>
+      <span style="margin-left:10px;color:var(--muted);font-size:10px">— intensity relative to row max · click + to expand</span>
+    </div>
+  </div>
+</div>
+
+<!-- ======== TAB: FUNNEL ======== -->
+<div class="panel" id="panel-funnel">
+  <div class="hm-card">
+    <div class="chart-header" style="padding:14px 16px 0;margin:0">
+      <div>
+        <div class="chart-title">Funnel Performance — Full Business</div>
+        <div class="chart-subtitle" style="margin-bottom:0">AVG WEEKLY SALES · CALENDAR-NORMALIZED · CENTERED 3-MO AVG · ALL CUSTOMERS</div>
+      </div>
+    </div>
+    <div class="hm-toolbar">
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Metric</span>
+        <div class="pill-group" id="funnel-metric-grp">
+          <button class="pill-btn active" data-val="net" onclick="setLocalMetric(&#39;funnel&#39;,&#39;net&#39;)">Net $</button>
+          <button class="pill-btn" data-val="gross" onclick="setLocalMetric(&#39;funnel&#39;,&#39;gross&#39;)">Gross $</button>
+          <button class="pill-btn" data-val="units" onclick="setLocalMetric(&#39;funnel&#39;,&#39;units&#39;)">Units</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group" id="funnel-selltype-grp" style="display:none">
+        <span class="ctrl-label">Retail</span>
+        <div class="pill-group">
+          <button class="pill-btn" data-val="thru" onclick="setLocalSellType(&#39;funnel&#39;,&#39;thru&#39;)">Sell Thru</button>
+          <button class="pill-btn active" data-val="in" onclick="setLocalSellType(&#39;funnel&#39;,&#39;in&#39;)">Sell In</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Channel</span>
+        <div class="pill-group" id="funnel-chan-grp">
+          <button class="pill-btn active" data-val="all" onclick="setLocalChan(&#39;funnel&#39;,&#39;all&#39;)">All</button>
+          <button class="pill-btn" data-val="retail" onclick="setLocalChan(&#39;funnel&#39;,&#39;retail&#39;)">Retail</button>
+          <button class="pill-btn" data-val="ecomm" onclick="setLocalChan(&#39;funnel&#39;,&#39;ecomm&#39;)">eComm</button>
+        </div>
+      </div>
+    </div>
+    <div class="hm-toolbar">
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Period</span>
+        <div class="pill-group" id="funnel-period-grp">
+          <button class="pill-btn active" data-val="cur_month" onclick="setSharedPeriod(&#39;cur_month&#39;)">Current Month</button>
+          <button class="pill-btn" data-val="cur_quarter" onclick="setSharedPeriod(&#39;cur_quarter&#39;)">Current Quarter</button>
+          <button class="pill-btn" data-val="ytd" onclick="setSharedPeriod(&#39;ytd&#39;)">YTD</button>
+          <button class="pill-btn" data-val="l12m" onclick="setSharedPeriod(&#39;l12m&#39;)">L12M</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="chart-row-3">
+    <div class="chart-card">
+      <div class="chart-title">Vaginal — Average Weekly Sales</div>
+      <div class="chart-subtitle">CALENDAR-NORMALIZED, CENTERED 3-MO AVG</div>
+      <div style="position:relative;height:300px"><canvas id="funnelChart-vaginal"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Gut — Average Weekly Sales</div>
+      <div class="chart-subtitle">CALENDAR-NORMALIZED, CENTERED 3-MO AVG</div>
+      <div style="position:relative;height:300px"><canvas id="funnelChart-gut"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Hormonal / Energy — Average Weekly Sales</div>
+      <div class="chart-subtitle">CALENDAR-NORMALIZED, CENTERED 3-MO AVG</div>
+      <div style="position:relative;height:300px"><canvas id="funnelChart-hormonal"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======== TAB 4: HERO SKUs ======== -->
+<div class="panel" id="panel-hero-sku">
+
+  <!-- TOOLBAR -->
+  <div class="hm-card" style="border-radius:10px;overflow:visible">
+    <div class="hm-toolbar" style="border-bottom:none;border-radius:10px;flex-wrap:wrap;gap:0">
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Metric</span>
+        <div class="pill-group" id="hs-metric-grp">
+          <button class="pill-btn active" data-val="net" onclick="setHSMetric(&#39;net&#39;)">Net $</button>
+          <button class="pill-btn" data-val="gross" onclick="setHSMetric(&#39;gross&#39;)">Gross $</button>
+          <button class="pill-btn" data-val="units" onclick="setHSMetric(&#39;units&#39;)">Units</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group" id="hs-selltype-grp" style="display:none">
+        <span class="ctrl-label">Retail</span>
+        <div class="pill-group">
+          <button class="pill-btn" data-val="thru" onclick="setHSSellType(&#39;thru&#39;)">Sell Thru</button>
+          <button class="pill-btn active" data-val="in" onclick="setHSSellType(&#39;in&#39;)">Sell In</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Channel</span>
+        <div class="pill-group" id="hs-chan-grp">
+          <button class="pill-btn active" data-val="all" onclick="setHSChan(&#39;all&#39;)">All</button>
+          <button class="pill-btn" data-val="retail" onclick="setHSChan(&#39;retail&#39;)">Retail</button>
+          <button class="pill-btn" data-val="ecomm" onclick="setHSChan(&#39;ecomm&#39;)">eComm</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Base year</span>
+        <div class="pill-group" id="hs-year-grp">
+          <button class="pill-btn" data-val="all" onclick="setHSYear(&#39;all&#39;)">All Time</button>
+          <button class="pill-btn" data-val="2023" onclick="setHSYear(&#39;2023&#39;)">2023</button>
+          <button class="pill-btn" data-val="2024" onclick="setHSYear(&#39;2024&#39;)">2024</button>
+          <button class="pill-btn active" data-val="2025" onclick="setHSYear(&#39;2025&#39;)">2025</button>
+          <button class="pill-btn" data-val="2026" onclick="setHSYear(&#39;2026&#39;)">2026</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Show</span>
+        <div class="pill-group" id="hs-show-grp">
+          <button class="pill-btn active" data-val="all" onclick="setHSShow(&#39;all&#39;)">All SKUs</button>
+          <button class="pill-btn" data-val="base" onclick="setHSShow(&#39;base&#39;)">Core</button>
+          <button class="pill-btn" data-val="innov" onclick="setHSShow(&#39;innov&#39;)">Innovation</button>
+          <button class="pill-btn" data-val="new" onclick="setHSShow(&#39;new&#39;)">New Launches</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">Top N</span>
+        <div class="pill-group" id="hs-topn-grp">
+          <button class="pill-btn" data-val="10" onclick="setHSTopN(10)">10</button>
+          <button class="pill-btn active" data-val="20" onclick="setHSTopN(20)">20</button>
+          <button class="pill-btn" data-val="50" onclick="setHSTopN(50)">50</button>
+          <button class="pill-btn" data-val="999" onclick="setHSTopN(999)">All</button>
+        </div>
+      </div>
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">View by</span>
+        <div class="pill-group" id="hs-viewby-grp">
+          <button class="pill-btn active" data-val="all" onclick="setHSViewBy(&#39;all&#39;)">Full Business</button>
+          <button class="pill-btn" data-val="category" onclick="setHSViewBy(&#39;category&#39;)">Category</button>
+          <button class="pill-btn" data-val="franchise" onclick="setHSViewBy(&#39;franchise&#39;)">Franchise</button>
+          <button class="pill-btn" data-val="format" onclick="setHSViewBy(&#39;format&#39;)">Format</button>
+        </div>
+      </div>
+    </div>
+    <!-- TIMEFRAME ROW -->
+    <div style="padding:8px 0 4px 0">
+      <span class="ctrl-label" style="margin-bottom:4px;display:block">Period</span>
+      <div class="pill-group" id="hs-period-grp">
+        <button class="pill-btn active" data-val="cur_month" onclick="setSharedPeriod(&#39;cur_month&#39;)">Current Month</button>
+        <button class="pill-btn" data-val="cur_quarter" onclick="setSharedPeriod(&#39;cur_quarter&#39;)">Current Quarter</button>
+        <button class="pill-btn" data-val="ytd" onclick="setSharedPeriod(&#39;ytd&#39;)">YTD</button>
+        <button class="pill-btn" data-val="l12m" onclick="setSharedPeriod(&#39;l12m&#39;)">L12M</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARDS GRID -->
+  <div id="hs-grid" class="hs-grid"></div>
+
+  <!-- TREND CHART -->
+  <div class="hm-card" style="padding:16px 18px">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Top SKUs — Monthly Trend</div>
+        <div class="chart-subtitle" id="hs-trend-subtitle">TOP 8 SKUs · MONTH</div>
+      </div>
+      <div style="display:flex;gap:3px">
+        <button class="time-btn active" onclick="setHSTrendAxis(&#39;month&#39;)" id="hst-month">Monthly</button>
+        <button class="time-btn" onclick="setHSTrendAxis(&#39;quarter&#39;)" id="hst-quarter">Quarterly</button>
+        <button class="time-btn" onclick="setHSTrendAxis(&#39;year&#39;)" id="hst-year">Annual</button>
+      </div>
+    </div>
+    <div style="position:relative;height:280px"><canvas id="hsTrendChart" style="box-sizing: border-box; display: block; height: 280px; width: 1580px;" width="1580" height="280"></canvas></div>
+  </div>
+
+  <!-- FULL SKU TABLE -->
+  <div class="table-card">
+    <div class="table-header-row">
+      <div><div class="chart-title">Full SKU Scorecard</div><div class="chart-subtitle" style="margin:0">ALL METRICS · YEAR-OVER-YEAR · SORTED BY SELECTED METRIC</div></div>
+    </div>
+    <div class="table-wrap" id="hs-table-wrap"></div>
+  </div>
+</div>
+
+
+
+</main>
+</div>
+<div class="hm-tooltip" id="hm-tooltip"></div>
+
+<style>
+/* ---- HERO SKU TAB ---- */
+.hs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+.hs-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden;cursor:default;transition:box-shadow 0.15s;}
+.hs-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.08);}
+.hs-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;}
+.hs-rank{font-family:'Fraunces',serif;font-size:28px;font-weight:600;color:var(--line);line-height:1;margin-right:8px;flex-shrink:0;}
+.hs-rank.top3{color:var(--rose);}
+.hs-name{font-size:12px;font-weight:500;color:var(--deep);line-height:1.3;flex:1;}
+.hs-badges{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;}
+.hs-badge{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:500;letter-spacing:0.04em;}
+.hs-badge-cat{background:#f0eaf8;color:#7a5a9e;}
+.hs-badge-innov{background:#fff3e0;color:#b85c10;}
+.hs-badge-new{background:#e8f5e9;color:#2e7d32;}
+.hs-badge-core{background:#e3f2fd;color:#1565c0;}
+.hs-badge-decline{background:#fce4ec;color:#c62828;}
+.hs-badge-growth{background:#e8f5e9;color:#2e7d32;}
+.hs-value{font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:var(--deep);line-height:1;margin-bottom:2px;}
+.hs-yoy{font-size:11px;font-weight:500;margin-bottom:8px;}
+.hs-yoy.pos{color:#5a9e6f;}
+.hs-yoy.neg{color:#c45c5c;}
+.hs-yoy.flat{color:var(--muted);}
+.hs-bar-wrap{background:var(--line);border-radius:3px;height:4px;margin-bottom:6px;overflow:hidden;}
+.hs-bar{height:100%;border-radius:3px;background:var(--rose);transition:width 0.4s;}
+.hs-sub{font-size:10px;color:var(--muted);}
+.hs-sparkline{height:36px;margin:6px 0 2px;}
+.hs-accel{font-size:9px;padding:1px 5px;border-radius:6px;}
+.hs-accel.fast{background:#fff3cd;color:#856404;}
+
+/* category colour stripes */
+.hs-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.hs-card[data-cat="Vaginal"]::before{background:#9c6fbc;}
+.hs-card[data-cat="Gut"]::before{background:#e8856a;}
+.hs-card[data-cat="Hormonal"]::before{background:#7ab5c8;}
+.hs-card[data-cat="Beauty"]::before{background:#f2c4b0;}
+.hs-card[data-cat="Other"]::before{background:#c8c0b8;}
+
+/* table */
+#hs-table{font-size:11px;}
+#hs-table thead th{padding:8px 10px;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-align:right;border-bottom:1px solid var(--line);background:var(--cream);white-space:nowrap;cursor:pointer;user-select:none;}
+#hs-table thead th:first-child{text-align:left;min-width:160px;}
+#hs-table thead th:hover{color:var(--deep);}
+#hs-table thead th.sorted{color:var(--rose);}
+#hs-table tbody td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line);vertical-align:middle;}
+#hs-table tbody td:first-child{text-align:left;font-weight:500;}
+#hs-table tbody tr:hover td{background:#fdf5f0;}
+#hs-table tbody tr:last-child td{border-bottom:none;}
+.tbl-yoy{font-size:10px;font-weight:500;display:inline-block;padding:1px 5px;border-radius:6px;}
+.tbl-yoy.pos{background:#e8f5e9;color:#2e7d32;}
+.tbl-yoy.neg{background:#fce4ec;color:#c62828;}
+.tbl-bar-cell{position:relative;min-width:80px;}
+.tbl-bar-inner{height:6px;border-radius:3px;background:var(--rose);display:inline-block;vertical-align:middle;}
+.launch-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:middle;}
+
+/* ── Black numeric values across all tabs ── */
+/* KPI cards on all tabs */
+.kpi-value { color: #000 !important; }
+/* Heatmap last-col totals and grand total row */
+.heatmap-table td:last-child { color: #000 !important; }
+.heatmap-table .total-row td { color: #000 !important; }
+/* Pivot table cell values */
+#pivot-table td { color: #000 !important; }
+/* Hero SKU table body cells and card values */
+.hs-value { color: #000 !important; }
+#hs-table tbody td { color: #000 !important; }
+</style>
+
+<script>
+
+/* ============================================================
+   DATA SOURCE — published Google Sheets CSV
+   ============================================================ */
+// Paste the "Publish to web" CSV link for your Dashboard CSV tab here.
+const CSV_URL = "PASTE_YOUR_PUBLISHED_CSV_URL_HERE";
+
+let RAW_DATA = [];
+let ALL_STORES = [], ALL_CATS = [], ALL_YEARS = [], ALL_YMS = [];
+const ALL_QUARTERS= ['Q1','Q2','Q3','Q4'];
+
+function deriveLookups(){
+  ALL_STORES = [...new Set(RAW_DATA.map(r=>r.Customer))].sort();
+  ALL_CATS   = [...new Set(RAW_DATA.map(r=>r.Category).filter(Boolean))].sort();
+  ALL_YEARS  = [...new Set(RAW_DATA.map(r=>r.Year))].sort();
+  ALL_YMS    = [...new Set(RAW_DATA.map(r=>r.YM))].sort();
+}
+
+/* ============================================================
+   TIMEFRAME DEFINITIONS
+============================================================ */
+const TIMEFRAMES = [
+  {id:'cur_month', label:'Cur Month',    fn:()=>{ const yr=getLatestYear(),mo=getLatestMonth(),m=String(mo).padStart(2,'0'); return ALL_YMS.filter(ym=>ym===`${yr}-${m}`); }},
+  {id:'cur_q',     label:'Cur Quarter',  fn:()=>{ const yr=getLatestYear(),mo=getLatestMonth(),q=mo<=3?[1,2,3]:mo<=6?[4,5,6]:mo<=9?[7,8,9]:[10,11,12]; return ALL_YMS.filter(ym=>{const[y,mm]=ym.split('-');return parseInt(y)===yr&&q.includes(parseInt(mm));}); }},
+  {id:'ytd',       label:'YTD',          fn:()=>{ const yr=getLatestYear(),mo=getLatestMonth(); return ALL_YMS.filter(ym=>{const[y,mm]=ym.split('-');return parseInt(y)===yr&&parseInt(mm)<=mo;}); }},
+  {id:'l12',       label:'Last 12M',     fn:()=>ALL_YMS.slice(-12)},
+  {id:'all',       label:'All Time',     fn:()=>ALL_YMS},
+  {id:'2023',      label:'2023',         fn:()=>ALL_YMS.filter(y=>y.startsWith('2023'))},
+  {id:'2024',      label:'2024',         fn:()=>ALL_YMS.filter(y=>y.startsWith('2024'))},
+  {id:'2025',      label:'2025',         fn:()=>ALL_YMS.filter(y=>y.startsWith('2025'))},
+  {id:'2026',      label:'2026',         fn:()=>ALL_YMS.filter(y=>y.startsWith('2026'))},
+  {id:'l6',        label:'Last 6M',      fn:()=>ALL_YMS.slice(-6)},
+  {id:'24v25',     label:'2024 vs 2025', fn:()=>ALL_YMS.filter(y=>y.startsWith('2024')||y.startsWith('2025'))},
+  {id:'q1all',     label:'All Q1s',      fn:()=>ALL_YMS.filter(y=>{const m=+y.split('-')[1];return m>=1&&m<=3;})},
+  {id:'q2all',     label:'All Q2s',      fn:()=>ALL_YMS.filter(y=>{const m=+y.split('-')[1];return m>=4&&m<=6;})},
+  {id:'q3all',     label:'All Q3s',      fn:()=>ALL_YMS.filter(y=>{const m=+y.split('-')[1];return m>=7&&m<=9;})},
+  {id:'q4all',     label:'All Q4s',      fn:()=>ALL_YMS.filter(y=>{const m=+y.split('-')[1];return m>=10&&m<=12;})},
+];
+
+/* ============================================================
+   OVERVIEW PERIOD STATE
+============================================================ */
+// Determine latest month in dataset dynamically
+function getLatestYM(){ return ALL_YMS[ALL_YMS.length-1] || '2026-03'; }
+function getLatestYear(){ const ym=getLatestYM(); return parseInt(ym.split('-')[0]); }
+function getLatestMonth(){ const ym=getLatestYM(); return parseInt(ym.split('-')[1]); }
+
+// Overview period state (separate from sidebar year filters)
+let OV = {
+  period: 'l12m',        // cur_month | cur_quarter | ytd | l12m
+  comp:   'py',          // py | pm
+  chartView: 'total',    // total | ecomm_retail | all_channels
+  acFilter: 'both'       // for all_channels view: both | retail | ecomm
+};
+
+function getOvYMs(){
+  const yr = getLatestYear(), mo = getLatestMonth();
+  if(OV.period === 'cur_month'){
+    const m = String(mo).padStart(2,'0');
+    return ALL_YMS.filter(ym => ym === `${yr}-${m}`);
+  }
+  if(OV.period === 'cur_quarter'){
+    const q = mo<=3?[1,2,3]:mo<=6?[4,5,6]:mo<=9?[7,8,9]:[10,11,12];
+    return ALL_YMS.filter(ym=>{ const [y,m]=ym.split('-'); return parseInt(y)===yr && q.includes(parseInt(m)); });
+  }
+  if(OV.period === 'ytd'){
+    return ALL_YMS.filter(ym=>{ const [y,m]=ym.split('-'); return parseInt(y)===yr && parseInt(m)<=mo; });
+  }
+  if(OV.period === 'l12m'){
+    return ALL_YMS.slice(-12);
+  }
+  return ALL_YMS;
+}
+
+function getCompYMs(curYMs){
+  if(!curYMs.length) return [];
+  if(OV.comp === 'py'){
+    return curYMs.map(ym=>{ const [y,m]=ym.split('-'); return `${parseInt(y)-1}-${m}`; }).filter(ym=>ALL_YMS.includes(ym));
+  }
+  if(OV.comp === 'pm'){
+    // shift all YMs back by number of months in curYMs
+    const shift = curYMs.length;
+    return curYMs.map(ym=>{
+      const [y,m]=ym.split('-'); let yr2=parseInt(y),mo2=parseInt(m)-shift;
+      while(mo2<=0){mo2+=12;yr2--;}
+      return `${yr2}-${String(mo2).padStart(2,'0')}`;
+    }).filter(ym=>ALL_YMS.includes(ym));
+  }
+  return [];
+}
+
+function getOvPeriodLabel(){
+  const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const yr = getLatestYear(), mo = getLatestMonth();
+  const compLabel = OV.comp === 'py' ? 'PY' : 'PP';
+  if(OV.period === 'cur_month'){
+    const py = OV.comp==='py' ? `${MONTHS[mo-1]} ${yr-1}` : `${MONTHS[mo===1?11:mo-2]} ${mo===1?yr-1:yr}`;
+    return `${MONTHS[mo-1]} ${yr} vs ${py} (${compLabel})`;
+  }
+  if(OV.period === 'cur_quarter'){
+    const q = mo<=3?'Q1':mo<=6?'Q2':mo<=9?'Q3':'Q4';
+    return `${q} ${yr} vs ${compLabel}`;
+  }
+  if(OV.period === 'ytd') return `YTD ${yr} vs ${compLabel}`;
+  if(OV.period === 'l12m') return `Last 12 Months vs Prior 12M`;
+  return '';
+}
+
+function syncSidebarToOvPeriod(){
+  // Derive which years and quarters are present in the current OV period YMs
+  const yms = getOvYMs();
+  const years = new Set(yms.map(ym=>parseInt(ym.split('-')[0])));
+  const quarters = new Set(yms.map(ym=>{
+    const mo=parseInt(ym.split('-')[1]);
+    return mo<=3?'Q1':mo<=6?'Q2':mo<=9?'Q3':'Q4';
+  }));
+  S.years = years;
+  S.quarters = quarters;
+  // Update year checkboxes
+  document.querySelectorAll('#year-filters input[type=checkbox]').forEach(cb=>{
+    const yr=parseInt(cb.id.replace('y-',''));
+    cb.checked=years.has(yr);
+  });
+  // Update quarter checkboxes
+  document.querySelectorAll('#quarter-filters input[type=checkbox]').forEach(cb=>{
+    const q=cb.id.replace('q-','');
+    cb.checked=quarters.has(q);
+  });
+}
+
+function setOvPeriod(v){
+  OV.period=v;
+  syncAllPeriodPills(v);
+  syncSidebarToOvPeriod();
+  renderAll();
+}
+// Syncs all period pill groups (overview + bc + cat + hs) to the given period value
+function syncAllPeriodPills(v){
+  ['ov-period-grp','bc-period-grp','cat-period-grp','hs-period-grp','ue-period-grp','funnel-period-grp'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.querySelectorAll('.pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===v));
+  });
+}
+function setSharedPeriod(v){
+  OV.period=v;
+  syncAllPeriodPills(v);
+  syncSidebarToOvPeriod();
+  renderAll();
+}
+function setOvComp(v){
+  OV.comp=v;
+  document.querySelectorAll('#ov-comp-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===v));
+  renderAll();
+}
+function setChartView(v){
+  // No-op: all 3 chart views are now always shown simultaneously
+}
+function setACFilter(v){
+  OV.acFilter=v;
+  ['both','retail','ecomm'].forEach(x=>{ const el=document.getElementById('acf-'+x); if(el) el.classList.toggle('active',x===v); });
+  renderAll();
+}
+
+/* ============================================================
+   STATE
+============================================================ */
+let S = {
+  // global
+  metric:'net', channel:'all', sellType:'in',
+  years: new Set([2023,2024,2025,2026]),
+  quarters: new Set(ALL_QUARTERS),
+  stores: new Set(ALL_STORES),
+  categories: new Set(ALL_CATS),
+  itemSearch:'',
+  group:'Customer', timeAxis:'month',
+  sortCol:null, sortDir:1,
+  activeTab:'overview',
+  // by-customer tab local
+  bc: { metric:'net', sellType:'in', chan:'all', rowGroup:'customer-category',
+        timeframe:'l12', custFilter: new Set(ALL_STORES),
+        expanded: new Set() },
+  // by-category tab local
+  cat: { metric:'net', sellType:'in', chan:'all',
+         rowGroup:'category-customer', timeframe:'l12',
+         expanded: new Set() },
+  // hero sku tab local
+  hs: { metric:'net', sellType:'in', chan:'all',
+        year:'2025', show:'all', topN:20,
+        trendAxis:'month', sortCol:'val', sortDir:1,
+        timeframe:'l12', viewBy:'all' },
+  // unit economics tab local
+  ue: { metric:'cost', sellType:'in', chan:'all',
+        rowGroup:'item-customer', expanded: new Set() },
+  // funnel tab local (full-business scope — ignores customer/category sidebar filters)
+  funnel: { metric:'net', sellType:'in', chan:'all' },
+};
+
+/* ============================================================
+   HELPERS
+============================================================ */
+const MK = {net:'Net Sales', gross:'Gross Dollars', units:'Units'};
+function mk(scope){ return MK[S[scope].metric]; }
+
+function fmt(v, metric){
+  if(!v) return '–';
+  if(metric==='cost'||metric==='srp') return '$'+v.toFixed(2);
+  if(metric==='units') return v>=1e6?(v/1e6).toFixed(1)+'M':v>=1000?(v/1000).toFixed(1)+'K':Math.round(v).toLocaleString();
+  return v>=1e6?'$'+(v/1e6).toFixed(2)+'M':v>=1000?'$'+(v/1000).toFixed(1)+'K':'$'+Math.round(v).toLocaleString();
+}
+function fmtFull(v, metric){
+  if(!v) return '–';
+  if(metric==='cost'||metric==='srp') return '$'+v.toFixed(2);
+  if(metric==='units') return Math.round(v).toLocaleString();
+  return '$'+Math.round(v).toLocaleString();
+}
+function sum(arr,key){ return arr.reduce((a,b)=>a+(b[key]||0),0); }
+function groupBy(arr,key){ const m={}; for(const r of arr){const k=r[key]||'(none)';if(!m[k])m[k]=[];m[k].push(r);} return m; }
+
+/* ============================================================
+   FILTER
+============================================================ */
+function getFiltered(overrides){
+  const o = overrides||{};
+  const chan    = o.chan    ?? S.channel;
+  const stype   = o.stype  ?? S.sellType;
+  const search  = S.itemSearch.toLowerCase();
+  return RAW_DATA.filter(r=>{
+    if(chan==='retail'  && r.Channel!=='Retail')      return false;
+    if(chan==='ecomm'   && r.Channel!=='eCommerce')    return false;
+    if(r.Channel==='Retail'){
+      if(stype==='thru' && r.SellType!=='Sell Thru')  return false;
+      if(stype==='in'   && r.SellType!=='Sell In')    return false;
+    }
+    if(!S.years.has(r.Year))    return false;
+    if(r.Quarter && !S.quarters.has(r.Quarter)) return false;
+    if(!S.stores.has(r.Customer)) return false;
+    if(r.Category && !S.categories.has(r.Category)) return false;
+    if(search && !r.Item.toLowerCase().includes(search)) return false;
+    return true;
+  });
+}
+
+// Like getFiltered but uses explicit years/quarters sets (for tab-local timeframes)
+function getFilteredForTab(overrides){
+  const o = overrides||{};
+  const chan    = o.chan    ?? S.channel;
+  const stype   = o.stype  ?? S.sellType;
+  const years   = o.years  ?? S.years;
+  const quarters= o.quarters ?? S.quarters;
+  const search  = S.itemSearch.toLowerCase();
+  return RAW_DATA.filter(r=>{
+    if(chan==='retail'  && r.Channel!=='Retail')      return false;
+    if(chan==='ecomm'   && r.Channel!=='eCommerce')    return false;
+    if(r.Channel==='Retail'){
+      if(stype==='thru' && r.SellType!=='Sell Thru')  return false;
+      if(stype==='in'   && r.SellType!=='Sell In')    return false;
+    }
+    if(!years.has(r.Year))    return false;
+    if(r.Quarter && !quarters.has(r.Quarter)) return false;
+    if(!S.stores.has(r.Customer)) return false;
+    if(r.Category && !S.categories.has(r.Category)) return false;
+    if(search && !r.Item.toLowerCase().includes(search)) return false;
+    return true;
+  });
+}
+
+/* ============================================================
+   HEATMAP COLOUR
+============================================================ */
+function hmColor(val, rowMax){
+  if(!val||!rowMax) return '#f9f5f2';
+  const t=Math.min(val/rowMax,1);
+  if(t<0.001) return '#f9f5f2';
+  const r1=[253,240,235],r2=[232,133,106],r3=[160,55,30];
+  let r,g,b;
+  if(t<0.5){const s=t*2;r=Math.round(r1[0]+(r2[0]-r1[0])*s);g=Math.round(r1[1]+(r2[1]-r1[1])*s);b=Math.round(r1[2]+(r2[2]-r1[2])*s);}
+  else{const s=(t-0.5)*2;r=Math.round(r2[0]+(r3[0]-r2[0])*s);g=Math.round(r2[1]+(r3[1]-r2[1])*s);b=Math.round(r2[2]+(r3[2]-r2[2])*s);}
+  return `rgb(${r},${g},${b})`;
+}
+function hmTextColor(val,rowMax){
+  if(!val||!rowMax) return '#c8b4ae';
+  return 'var(--deep)';
+}
+
+/* ============================================================
+   TOOLTIP
+============================================================ */
+function showTip(e,label,ym,val,rowTotal,grandTotal,metric){
+  const [y,m]=ym.split('-');
+  const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const pRow=rowTotal?(val/rowTotal*100).toFixed(1):0;
+  const pGrand=grandTotal?(val/grandTotal*100).toFixed(1):0;
+  const t=document.getElementById('hm-tooltip');
+  t.innerHTML=`<strong>${label}</strong>${MONTHS[+m-1]} ${y}<br>${fmtFull(val,metric)}<br><span style="opacity:0.65">${pRow}% of row · ${pGrand}% of total</span>`;
+  t.style.display='block';
+  t.style.left=(e.clientX+14)+'px'; t.style.top=(e.clientY-10)+'px';
+}
+function hideTip(){document.getElementById('hm-tooltip').style.display='none';}
+document.addEventListener('mousemove',e=>{
+  const t=document.getElementById('hm-tooltip');
+  if(t.style.display==='block'){t.style.left=(e.clientX+14)+'px';t.style.top=(e.clientY-10)+'px';}
+});
+
+/* ============================================================
+   EXPANDABLE HEATMAP RENDERER
+   
+   rows: [ {key, isGroup, parentKey?, children:[key], data:{ym->val}, total } ]
+   colKeys: string[]
+   expandedSet: Set of group keys currently expanded
+   onToggle: fn(groupKey) called when expand btn clicked
+   scope: 'bc' | 'cat'  (for metric lookup)
+============================================================ */
+function renderExpandableHeatmap(containerId, rows, colKeys, expandedSet, onToggle, scope, overallOverride){
+  const metric = S[scope].metric;
+  // overallOverride lets ratio-style metrics (e.g. weighted-avg cost/unit) supply a
+  // properly weighted grand total instead of summing per-group ratios, which would
+  // be mathematically wrong (summing averages isn't an average).
+  const grandTotal = overallOverride ? overallOverride.total : rows.filter(r=>r.isGroup).reduce((s,r)=>s+r.total,0);
+
+  function fmtCol(ym){
+    const [y,m]=ym.split('-');
+    const M=['J','F','M','A','M','J','J','A','S','O','N','D'];
+    return `<span style="display:block;font-size:8px;opacity:0.6">${y}</span>${M[+m-1]}`;
+  }
+
+  // Column totals across ALL rows (group level)
+  const colTotals = {};
+  for(const col of colKeys){
+    colTotals[col] = overallOverride ? (overallOverride.data[col]||0) : rows.filter(r=>r.isGroup).reduce((s,r)=>s+(r.data[col]||0), 0);
+  }
+
+  let html=`<table class="heatmap-table">
+  <thead><tr>
+    <th class="row-header corner">—</th>
+    ${colKeys.map(c=>`<th class="col-header">${fmtCol(c)}</th>`).join('')}
+    <th class="col-header" style="background:#f5ede8;border-right:none">Total</th>
+  </tr></thead><tbody>`;
+
+  for(const row of rows){
+    const isExpanded = expandedSet.has(row.key);
+    const rowMax = row.total;
+
+    if(row.isGroup){
+      const btn = row.children && row.children.length > 0
+        ? `<button class="expand-btn" onclick="toggleExpand('${scope}','${row.key.replace(/'/g,"\\'")}')">${isExpanded?'−':'+'}</button>`
+        : `<span style="display:inline-block;width:18px;margin-right:6px"></span>`;
+      html+=`<tr class="group-row">
+        <td><div class="row-label">${btn}<span title="${row.key}">${row.key}</span></div></td>
+        ${colKeys.map(col=>{
+          const val=row.data[col]||0;
+          const bg=hmColor(val,rowMax);
+          const tc=hmTextColor(val,rowMax);
+          return `<td style="background:${bg};color:${tc}" 
+            onmouseenter="showTip(event,'${row.key.replace(/'/g,"\\'")}','${col}',${val},${rowMax},${grandTotal},'${metric}')"
+            onmouseleave="hideTip()">
+            <div class="hm-val">${fmt(val,metric)}</div></td>`;
+        }).join('')}
+        <td style="background:#f5ede8;font-weight:600;color:var(--deep)">${fmt(rowMax,metric)}</td>
+      </tr>`;
+
+      // Child rows
+      if(row.children && isExpanded){
+        for(const child of row.children){
+          const childMax = child.total;
+          // Child shading uses its own row max
+          html+=`<tr class="child-row">
+            <td class="child-label"><div class="row-label" style="padding-left:24px"><span style="color:var(--muted);margin-right:6px;font-size:10px">└</span><span title="${child.key}">${child.key}</span></div></td>
+            ${colKeys.map(col=>{
+              const val=child.data[col]||0;
+              const bg=hmColor(val,childMax);
+              const tc=hmTextColor(val,childMax);
+              return `<td style="background:${bg};color:${tc};opacity:0.88"
+                onmouseenter="showTip(event,'${child.key.replace(/'/g,"\\'")}','${col}',${val},${childMax},${grandTotal},'${metric}')"
+                onmouseleave="hideTip()">
+                <div class="hm-val">${fmt(val,metric)}</div></td>`;
+            }).join('')}
+            <td style="background:#faeae4;color:var(--deep)">${fmt(childMax,metric)}</td>
+          </tr>`;
+        }
+      }
+    }
+  }
+
+  // Grand total row
+  html+=`<tr class="total-row">
+    <td><div class="row-label" style="padding-left:10px;font-weight:700">TOTAL</div></td>
+    ${colKeys.map(col=>`<td>${fmt(colTotals[col]||0,metric)}</td>`).join('')}
+    <td>${fmt(grandTotal,metric)}</td>
+  </tr>`;
+
+  html+=`</tbody></table>`;
+  document.getElementById(containerId).innerHTML=html;
+}
+
+/* ============================================================
+   BUILD ROWS HELPER
+   Given data + groupKey + childKey, returns rows array
+============================================================ */
+function buildRows(data, groupKey, childKey, colKeys, metric){
+  const mk_ = MK[metric];
+  // aggregate by group
+  const gMap={};
+  for(const r of data){
+    const g=r[groupKey]||'(none)';
+    const c=r[childKey]||'(none)';
+    const col=r.YM;
+    if(!colKeys.includes(col)) continue;
+    if(!gMap[g]) gMap[g]={key:g,isGroup:true,data:{},total:0,childMap:{}};
+    gMap[g].data[col]=(gMap[g].data[col]||0)+(r[mk_]||0);
+    gMap[g].total+=(r[mk_]||0);
+    if(!gMap[g].childMap[c]) gMap[g].childMap[c]={key:c,isGroup:false,data:{},total:0};
+    gMap[g].childMap[c].data[col]=(gMap[g].childMap[c].data[col]||0)+(r[mk_]||0);
+    gMap[g].childMap[c].total+=(r[mk_]||0);
+  }
+  // sort groups by total desc
+  const groups=Object.values(gMap).sort((a,b)=>b.total-a.total);
+  for(const g of groups){
+    g.children=Object.values(g.childMap).sort((a,b)=>b.total-a.total);
+  }
+  return groups;
+}
+
+/* ============================================================
+   BUILD UNIT-ECONOMICS ROWS
+   Same {key,isGroup,children,data,total} shape as buildRows(), but
+   cell values are weighted-average ratios (cost/unit, SRP) rather
+   than sums — sum(numerator)/sum(Units) per cell, not avg-of-avgs.
+   Also returns `overall`: the same ratio computed across ALL rows,
+   for a mathematically correct grand-total row/column.
+============================================================ */
+function buildUERows(data, groupKey, childKey, colKeys, metric){
+  const gMap={};
+  const ovNum={}, ovDen={}; let ovTotNum=0, ovTotDen=0;
+  for(const r of data){
+    const g=r[groupKey]||'(none)';
+    const c=r[childKey]||'(none)';
+    const col=r.YM;
+    if(!colKeys.includes(col)) continue;
+    const units = r.Units||0;
+    const num = metric==='cost' ? (r.COGS||0) : (r.SRP||0)*units;
+    if(!gMap[g]) gMap[g]={key:g,isGroup:true,data:{},total:0,childMap:{},_num:{},_den:{},_totNum:0,_totDen:0};
+    const grp=gMap[g];
+    grp._num[col]=(grp._num[col]||0)+num; grp._den[col]=(grp._den[col]||0)+units;
+    grp._totNum+=num; grp._totDen+=units;
+    if(!grp.childMap[c]) grp.childMap[c]={key:c,isGroup:false,data:{},total:0,_num:{},_den:{},_totNum:0,_totDen:0};
+    const ch=grp.childMap[c];
+    ch._num[col]=(ch._num[col]||0)+num; ch._den[col]=(ch._den[col]||0)+units;
+    ch._totNum+=num; ch._totDen+=units;
+    ovNum[col]=(ovNum[col]||0)+num; ovDen[col]=(ovDen[col]||0)+units;
+    ovTotNum+=num; ovTotDen+=units;
+  }
+  function finalize(o){
+    for(const col of colKeys){ const n=o._num[col]||0, d=o._den[col]||0; o.data[col]= d? n/d : 0; }
+    o.total = o._totDen ? o._totNum/o._totDen : 0;
+  }
+  const groups=Object.values(gMap);
+  for(const g of groups){
+    finalize(g);
+    g.children=Object.values(g.childMap);
+    for(const c of g.children) finalize(c);
+    g.children.sort((a,b)=>b.total-a.total);
+  }
+  groups.sort((a,b)=>b.total-a.total);
+  const overall={data:{},total: ovTotDen? ovTotNum/ovTotDen : 0};
+  for(const col of colKeys){ const n=ovNum[col]||0, d=ovDen[col]||0; overall.data[col]= d? n/d : 0; }
+  return {groups, overall};
+}
+
+/* ============================================================
+   SCOPE DISPATCH — routes a scope key ('bc'|'cat'|'ue'|'funnel')
+   to its render function. Shared by every local-control setter.
+============================================================ */
+function renderScopeTab(scope){
+  if(scope==='bc') renderBCTab();
+  else if(scope==='cat') renderCatTab();
+  else if(scope==='ue') renderUnitEconTab();
+  else if(scope==='funnel') renderFunnelTab();
+}
+
+/* ============================================================
+   EXPAND TOGGLE
+============================================================ */
+function toggleExpand(scope, key){
+  const exp = S[scope].expanded;
+  if(exp.has(key)) exp.delete(key); else exp.add(key);
+  renderScopeTab(scope);
+}
+
+/* ============================================================
+   BY-CUSTOMER TAB
+============================================================ */
+// Map OV.period IDs to TIMEFRAMES IDs
+function ovPeriodToColKeys(){
+  return getOvYMs();
+}
+
+function renderBCTab(){
+  const bc=S.bc;
+  const colKeys=ovPeriodToColKeys();
+  const colSet=new Set(colKeys);
+  const tfYears = new Set(colKeys.map(ym=>parseInt(ym.split('-')[0])));
+  const tfQuarters = new Set(colKeys.map(ym=>{const mo=parseInt(ym.split('-')[1]);return mo<=3?'Q1':mo<=6?'Q2':mo<=9?'Q3':'Q4';}));
+  const data=getFilteredForTab({chan:bc.chan, stype:bc.sellType, years:tfYears, quarters:tfQuarters})
+    .filter(r=>colSet.has(r.YM) && bc.custFilter.has(r.Customer));
+  const [groupKey,childKey]=bc.rowGroup.split('-').map(k=>({
+    customer:'Customer',category:'Category',item:'Item',franchise:'Franchise',department:'Department'
+  }[k]));
+  const rows=buildRows(data, groupKey, childKey, colKeys, bc.metric);
+  renderExpandableHeatmap('bc-heatmap-wrap', rows, colKeys, bc.expanded,
+    (key)=>toggleExpand('bc',key), 'bc');
+}
+
+/* ============================================================
+   BY-CATEGORY TAB
+============================================================ */
+function renderCatTab(){
+  const cat=S.cat;
+  const colKeys=ovPeriodToColKeys();
+  const colSet=new Set(colKeys);
+  const tfYears = new Set(colKeys.map(ym=>parseInt(ym.split('-')[0])));
+  const tfQuarters = new Set(colKeys.map(ym=>{const mo=parseInt(ym.split('-')[1]);return mo<=3?'Q1':mo<=6?'Q2':mo<=9?'Q3':'Q4';}));
+  let data=getFilteredForTab({chan:cat.chan, stype:cat.sellType, years:tfYears, quarters:tfQuarters})
+    .filter(r=>colSet.has(r.YM));
+  const [groupKey,childKey]=cat.rowGroup.split('-').map(k=>({
+    customer:'Customer',category:'Category',item:'Item',franchise:'Franchise'
+  }[k]));
+  const rows=buildRows(data, groupKey, childKey, colKeys, cat.metric);
+  renderExpandableHeatmap('cat-heatmap-wrap', rows, colKeys, cat.expanded,
+    (key)=>toggleExpand('cat',key), 'cat');
+}
+
+/* ============================================================
+   UNIT ECONOMICS TAB (Cost/Unit & SRP by SKU x Customer)
+============================================================ */
+function renderUnitEconTab(){
+  const ue=S.ue;
+  const colKeys=ovPeriodToColKeys();
+  const colSet=new Set(colKeys);
+  const tfYears = new Set(colKeys.map(ym=>parseInt(ym.split('-')[0])));
+  const tfQuarters = new Set(colKeys.map(ym=>{const mo=parseInt(ym.split('-')[1]);return mo<=3?'Q1':mo<=6?'Q2':mo<=9?'Q3':'Q4';}));
+  const data=getFilteredForTab({chan:ue.chan, stype:ue.sellType, years:tfYears, quarters:tfQuarters})
+    .filter(r=>colSet.has(r.YM));
+  const [groupKey,childKey]=ue.rowGroup.split('-').map(k=>({item:'Item',customer:'Customer'}[k]));
+  const {groups, overall}=buildUERows(data, groupKey, childKey, colKeys, ue.metric);
+  renderExpandableHeatmap('ue-heatmap-wrap', groups, colKeys, ue.expanded,
+    (key)=>toggleExpand('ue',key), 'ue', overall);
+}
+
+/* ============================================================
+   FUNNEL TAB — full-business view (ignores customer/category
+   sidebar filters), stacked-area chart per Funnel group, using
+   calendar-normalized avg weekly sales + centered 3-mo avg.
+============================================================ */
+const FUNNEL_GROUPS = [
+  {key:'Vaginal Health', canvasId:'funnelChart-vaginal'},
+  {key:'Gut Health',     canvasId:'funnelChart-gut'},
+  {key:'Hormonal/Energy',canvasId:'funnelChart-hormonal'},
+];
+
+function getFunnelFilteredData(chan, stype){
+  return RAW_DATA.filter(r=>{
+    if(chan==='retail' && r.Channel!=='Retail')   return false;
+    if(chan==='ecomm'  && r.Channel!=='eCommerce') return false;
+    if(r.Channel==='Retail'){
+      if(stype==='thru' && r.SellType!=='Sell Thru') return false;
+      if(stype==='in'   && r.SellType!=='Sell In')   return false;
+    }
+    return true;
+  });
+}
+
+// Centered 3-month moving average over a full-history series, using
+// whatever neighbors exist at the edges (1 and 2-point averages there).
+function centeredMovingAvg3(series){
+  return series.map((v,i)=>{
+    const lo=Math.max(0,i-1), hi=Math.min(series.length-1,i+1);
+    const slice=series.slice(lo,hi+1);
+    return slice.reduce((a,b)=>a+b,0)/slice.length;
+  });
+}
+
+function computeFunnelSeries(chan, stype, metric){
+  const raw = getFunnelFilteredData(chan, stype);
+  const mk_ = MK[metric];
+  const result = {};
+  for(const {key} of FUNNEL_GROUPS){
+    const rowsForFunnel = raw.filter(r=>r.Funnel===key);
+    const items = [...new Set(rowsForFunnel.map(r=>r.Item))];
+    const perItemMonthly = {};
+    for(const it of items) perItemMonthly[it]={};
+    for(const r of rowsForFunnel){
+      perItemMonthly[r.Item][r.YM] = (perItemMonthly[r.Item][r.YM]||0) + (r[mk_]||0);
+    }
+    const smoothed = {};
+    for(const it of items){
+      const weeklySeries = ALL_YMS.map(ym=>{
+        const total = perItemMonthly[it][ym]||0;
+        const [y,m] = ym.split('-').map(Number);
+        const daysInMonth = new Date(y, m, 0).getDate();
+        return total/(daysInMonth/7);
+      });
+      const sm = centeredMovingAvg3(weeklySeries);
+      smoothed[it]={};
+      ALL_YMS.forEach((ym,i)=>smoothed[it][ym]=sm[i]);
+    }
+    result[key]={items, smoothed};
+  }
+  return result;
+}
+
+function renderFunnelTab(){
+  const fnl = S.funnel;
+  const colKeys = ovPeriodToColKeys();
+  const series = computeFunnelSeries(fnl.chan, fnl.sellType, fnl.metric);
+  FUNNEL_GROUPS.forEach(({key,canvasId})=>{
+    const {items,smoothed} = series[key];
+    const sortedItems=[...items].sort((a,b)=>{
+      const sa=colKeys.reduce((s,ym)=>s+(smoothed[a][ym]||0),0);
+      const sb=colKeys.reduce((s,ym)=>s+(smoothed[b][ym]||0),0);
+      return sb-sa;
+    });
+    const datasets=sortedItems.map((it,i)=>({
+      label:it,
+      data:colKeys.map(ym=>smoothed[it][ym]||0),
+      backgroundColor: COLORS[i%COLORS.length]+'aa',
+      borderColor: COLORS[i%COLORS.length],
+      fill:true, tension:0.3, pointRadius:0, borderWidth:1
+    }));
+    mkChart(canvasId,'line',colKeys,datasets,{
+      scales:{x:XS,y:{...YS,stacked:true,ticks:{...YS.ticks,callback:v=>fmt(v,fnl.metric)}}},
+      plugins:{
+        legend:{display:true,labels:{font:{family:'DM Mono',size:9},color:'#6B6B6B',boxWidth:8,padding:6}},
+        tooltip:{...TTS,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmt(ctx.raw,fnl.metric)}`}}
+      },
+      _interaction:INTERACTION_INDEX
+    });
+  });
+}
+
+/* ============================================================
+   LOCAL CONTROLS
+============================================================ */
+function setLocalMetric(scope, val){
+  S[scope].metric=val;
+  document.querySelectorAll(`#${scope}-metric-grp .pill-btn`).forEach(b=>b.classList.toggle('active',b.dataset.val===val));
+  renderScopeTab(scope);
+}
+function setLocalSellType(scope, val){
+  // sync all scopes so sell type is always consistent across all tabs
+  S.sellType=val;
+  S.bc.sellType=val; S.cat.sellType=val; S.hs.sellType=val; S.ue.sellType=val; S.funnel.sellType=val;
+  // update sidebar toggle
+  ['thru','in'].forEach(x=>document.getElementById('st-'+x).classList.toggle('active',x===val));
+  // update all in-tab pill buttons
+  document.querySelectorAll('#bc-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===val));
+  document.querySelectorAll('#cat-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===val));
+  document.querySelectorAll('#hs-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===val));
+  document.querySelectorAll('#ue-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===val));
+  document.querySelectorAll('#funnel-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===val));
+  renderScopeTab(scope);
+}
+function setLocalChan(scope, val){
+  S[scope].chan=val;
+  document.querySelectorAll(`#${scope}-chan-grp .pill-btn`).forEach(b=>b.classList.toggle('active',b.dataset.val===val));
+  const stGrp=document.getElementById(`${scope}-selltype-grp`);
+  if(stGrp){ stGrp.style.opacity=val==='ecomm'?'0.35':'1'; stGrp.style.pointerEvents=val==='ecomm'?'none':'auto'; }
+  renderScopeTab(scope);
+}
+function setLocalRowGroup(scope, val){
+  S[scope].rowGroup=val;
+  S[scope].expanded=new Set(); // reset expansions on re-group
+  document.querySelectorAll(`#${scope}-rowgroup-grp .pill-btn`).forEach(b=>b.classList.toggle('active',b.dataset.val===val));
+  renderScopeTab(scope);
+}
+function setBCTimeframe(tf){
+  S.bc.timeframe=tf;
+  document.querySelectorAll('#bc-timeframe .tf-btn').forEach(b=>b.classList.toggle('active',b.dataset.tf===tf));
+  renderBCTab();
+}
+function setCatTimeframe(tf){
+  S.cat.timeframe=tf;
+  document.querySelectorAll('#cat-timeframe .tf-btn').forEach(b=>b.classList.toggle('active',b.dataset.tf===tf));
+  renderCatTab();
+}
+function toggleBCCust(s){
+  const f=S.bc.custFilter;
+  if(f.has(s)) f.delete(s); else f.add(s);
+  buildCustPills();
+  renderBCTab();
+}
+
+/* ============================================================
+   OVERVIEW CHART/TABLE
+============================================================ */
+// High-contrast palette — 13 perceptually distinct colors for each retailer
+// Ordered to match ALL_STORES alphabetical sort: Amazon, CVS, Costco, DTC, GoPuff, Other, QVC, Revolve, TJ Maxx, Target, TikTok, Ulta, Walmart
+// 13 maximally distinct colors — chosen to be easily told apart at a glance
+// Spread across every hue quadrant so no two neighbors share a family
+const RETAILER_COLORS = {
+  'Amazon':  '#E6194B', // vivid red
+  'CVS':     '#3CB44B', // vivid green
+  'Costco':  '#4363D8', // vivid blue
+  'DTC':     '#F58231', // vivid orange
+  'GoPuff':  '#911EB4', // vivid purple
+  'Other':   '#808080', // neutral grey
+  'QVC':     '#42D4F4', // sky cyan
+  'Revolve': '#F032E6', // vivid magenta
+  'TJ Maxx': '#BFEF45', // vivid lime
+  'Target':  '#000075', // navy
+  'TikTok':  '#1A1A1A', // black
+  'Ulta':    '#FFD700', // vivid gold
+  'Walmart': '#469990', // deep teal
+};
+// Fallback array for non-retailer uses (category charts etc.)
+const COLORS = Object.values(RETAILER_COLORS);
+const TTS={backgroundColor:'#1A1A1A',titleFont:{family:'DM Mono',size:11},bodyFont:{family:'DM Mono',size:11},padding:10,displayColors:true,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmt(ctx.raw,S.metric)}`}};
+// Separate interaction config for single-line hover vs index hover
+const INTERACTION_NEAREST={mode:'nearest',intersect:true};
+const INTERACTION_INDEX={mode:'index',intersect:false};
+const XS={grid:{display:false},ticks:{font:{family:'DM Mono',size:10},color:'#8a6f68',maxRotation:45}};
+const YS={grid:{color:'#e8ddd640'},ticks:{font:{family:'DM Mono',size:10},color:'#8a6f68',callback:v=>fmt(v,S.metric)}};
+
+function mkChart(id,type,labels,datasets,opts){
+  if(window['__ch_'+id])window['__ch_'+id].destroy();
+  const interaction = opts._interaction || {mode:'index',intersect:false};
+  const {_interaction, ...restOpts} = opts;
+  window['__ch_'+id]=new Chart(document.getElementById(id),{
+    type,data:{labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false,interaction,plugins:{legend:{display:true,labels:{font:{family:'DM Mono',size:10},color:'#6B6B6B',boxWidth:10,padding:8}},tooltip:TTS},...restOpts}
+  });
+}
+
+function renderKPIs(data){
+  // Use period-filtered data
+  const curYMs  = getOvYMs();
+  const compYMs = getCompYMs(curYMs);
+  const allFiltered = getFiltered();
+  const curData  = allFiltered.filter(r=>curYMs.includes(r.YM));
+  const compData = allFiltered.filter(r=>compYMs.includes(r.YM));
+
+  const nt=sum(curData,'Net Sales'), gs=sum(curData,'Gross Dollars'), un=sum(curData,'Units');
+  const cnt=sum(compData,'Net Sales'), cgs=sum(compData,'Gross Dollars'), cun=sum(compData,'Units');
+
+  document.getElementById('kpi-net').textContent=fmt(nt,'net');
+  document.getElementById('kpi-gross').textContent=fmt(gs,'gross');
+  document.getElementById('kpi-units').textContent=fmt(un,'units');
+  document.getElementById('kpi-rows').textContent=curData.length.toLocaleString();
+
+  const compLabel = OV.comp==='py'?'vs PY':'vs PP';
+  function yoy(curr,prev,id){
+    const el=document.getElementById(id);
+    if(!prev||prev===0){el.innerHTML='';return;}
+    const pct=(curr/prev-1)*100;
+    const sign=pct>=0?'+':'';
+    el.className='kpi-yoy '+(pct>=0?'pos':'neg');
+    el.textContent=`${sign}${pct.toFixed(1)}% ${compLabel}`;
+  }
+  yoy(nt,cnt,'kpi-net-yoy');
+  yoy(gs,cgs,'kpi-gross-yoy');
+  yoy(un,cun,'kpi-units-yoy');
+
+  // Update period label
+  const lbl=document.getElementById('ov-period-label');
+  if(lbl) lbl.textContent=getOvPeriodLabel();
+
+  document.getElementById('kpi-net-sub').textContent=`${curYMs.length} month${curYMs.length!==1?'s':''}`;
+  document.getElementById('kpi-gross-sub').textContent=`${[...S.stores].length} retailers`;
+}
+
+function monthToQ(month){ return month<=3?'Q1':month<=6?'Q2':month<=9?'Q3':'Q4'; }
+function recordYQ(r){ const q=r.Quarter||monthToQ(r.Month); return `${r.Year} ${q}`; }
+
+function renderTimeChart(data){
+  const m=MK[S.metric];
+  const acf=OV.acFilter;
+
+  // Helper: apply acFilter for all-channels chart
+  function acFilteredData(d){
+    if(acf==='retail') return d.filter(r=>r.Channel==='Retail');
+    if(acf==='ecomm')  return d.filter(r=>r.Channel==='eCommerce');
+    return d;
+  }
+
+  const acfLabel = acf==='retail'?'RETAIL ONLY':acf==='ecomm'?'eCOMM ONLY':'ALL CHANNELS';
+  const el_total    = document.getElementById('time-chart-subtitle-total');
+  const el_ecomm    = document.getElementById('time-chart-subtitle-ecomm');
+  const el_channels = document.getElementById('time-chart-subtitle-channels');
+
+  if(S.timeAxis==='month'){
+    const allYMs=[...new Set(data.map(r=>r.YM))].sort();
+
+    // --- Chart 1: Total ---
+    const byYM=groupBy(data,'YM');
+    const ds_total=[{label:'Total',data:allYMs.map(ym=>sum(byYM[ym]||[],m)),borderColor:'#e8856a',backgroundColor:'#e8856a22',fill:true,tension:0.35,pointRadius:3,borderWidth:2.5}];
+    if(el_total) el_total.textContent='ALL CHANNELS · TOTAL';
+    mkChart('timeChart-total','line',allYMs,ds_total,{scales:{x:XS,y:YS},_interaction:INTERACTION_INDEX});
+
+    // --- Chart 2: eComm vs Retail ---
+    const eData=data.filter(r=>r.Channel==='eCommerce');
+    const rData=data.filter(r=>r.Channel==='Retail');
+    const byYMe=groupBy(eData,'YM'), byYMr=groupBy(rData,'YM');
+    const ds_ecomm=[
+      {label:'eCommerce',data:allYMs.map(ym=>sum(byYMe[ym]||[],m)),borderColor:'#9cba8e',backgroundColor:'#9cba8e22',fill:true,tension:0.35,pointRadius:2,borderWidth:2},
+      {label:'Retail',   data:allYMs.map(ym=>sum(byYMr[ym]||[],m)),borderColor:'#7ab5c8',backgroundColor:'#7ab5c822',fill:true,tension:0.35,pointRadius:2,borderWidth:2}
+    ];
+    if(el_ecomm) el_ecomm.textContent='eCOMM vs RETAIL';
+    mkChart('timeChart-ecomm','line',allYMs,ds_ecomm,{scales:{x:XS,y:YS},_interaction:INTERACTION_INDEX});
+
+    // --- Chart 3: All Channels ---
+    const filtered=acFilteredData(data);
+    const custKeys=[...new Set(filtered.map(r=>r.Customer))].sort();
+    const ds_chan=custKeys.map((ck,i)=>{
+      const color=RETAILER_COLORS[ck]||COLORS[i%COLORS.length];
+      const sub=filtered.filter(r=>r.Customer===ck);
+      const byYMc=groupBy(sub,'YM');
+      return {label:ck,data:allYMs.map(ym=>sum(byYMc[ym]||[],m)),borderColor:color,backgroundColor:color+'18',fill:false,tension:0.3,pointRadius:4,pointHoverRadius:8,borderWidth:2.5,pointBackgroundColor:color,pointBorderColor:'#ffffff',pointBorderWidth:2};
+    });
+    if(el_channels) el_channels.textContent=`ALL CHANNELS BREAKOUT · ${acfLabel}`;
+    mkChart('timeChart-channels','line',allYMs,ds_chan,{scales:{x:XS,y:YS},_interaction:INTERACTION_NEAREST});
+
+  } else if(S.timeAxis==='quarter'){
+    const allYQs=[...new Set(data.map(r=>recordYQ(r)))].sort();
+    const byYQtotal={};for(const r of data){const k=recordYQ(r);if(!byYQtotal[k])byYQtotal[k]=[];byYQtotal[k].push(r);}
+
+    // Chart 1: Total
+    if(el_total) el_total.textContent='ALL CHANNELS · TOTAL';
+    mkChart('timeChart-total','bar',allYQs,[{label:'Total',data:allYQs.map(yq=>sum(byYQtotal[yq]||[],m)),backgroundColor:'#e8856acc',borderRadius:4}],{scales:{x:XS,y:YS}});
+
+    // Chart 2: eComm vs Retail
+    const byQe={},byQr={};
+    for(const r of data){const k=recordYQ(r);if(r.Channel==='eCommerce'){if(!byQe[k])byQe[k]=[];byQe[k].push(r);}else{if(!byQr[k])byQr[k]=[];byQr[k].push(r);}}
+    if(el_ecomm) el_ecomm.textContent='eCOMM vs RETAIL';
+    mkChart('timeChart-ecomm','bar',allYQs,[
+      {label:'eCommerce',data:allYQs.map(yq=>sum(byQe[yq]||[],m)),backgroundColor:'#9cba8ecc',borderRadius:4},
+      {label:'Retail',   data:allYQs.map(yq=>sum(byQr[yq]||[],m)),backgroundColor:'#7ab5c8cc',borderRadius:4}
+    ],{scales:{x:XS,y:YS}});
+
+    // Chart 3: All Channels
+    const filteredQ=acFilteredData(data);
+    const custKeysQ=[...new Set(filteredQ.map(r=>r.Customer))].sort();
+    const byQC={};for(const r of filteredQ){const k=recordYQ(r);if(!byQC[k])byQC[k]={};byQC[k][r.Customer]=(byQC[k][r.Customer]||0)+(r[m]||0);}
+    if(el_channels) el_channels.textContent=`ALL CHANNELS BREAKOUT · ${acfLabel}`;
+    mkChart('timeChart-channels','bar',allYQs,custKeysQ.map((ck,i)=>({label:ck,data:allYQs.map(yq=>byQC[yq]?.[ck]||0),backgroundColor:(RETAILER_COLORS[ck]||COLORS[i%COLORS.length])+'cc',borderRadius:4})),{scales:{x:XS,y:YS}});
+
+  } else {
+    const allYears=[...new Set(data.map(r=>String(r.Year)))].sort();
+    const byYtotal=groupBy(data,'Year');
+
+    // Chart 1: Total
+    if(el_total) el_total.textContent='ALL CHANNELS · TOTAL';
+    mkChart('timeChart-total','bar',allYears,[{label:'Total',data:allYears.map(y=>sum(byYtotal[y]||[],m)),backgroundColor:'#e8856acc',borderRadius:4}],{scales:{x:XS,y:YS}});
+
+    // Chart 2: eComm vs Retail
+    const byYe={},byYr={};
+    for(const r of data){const y=String(r.Year);if(r.Channel==='eCommerce'){if(!byYe[y])byYe[y]=[];byYe[y].push(r);}else{if(!byYr[y])byYr[y]=[];byYr[y].push(r);}}
+    if(el_ecomm) el_ecomm.textContent='eCOMM vs RETAIL';
+    mkChart('timeChart-ecomm','bar',allYears,[
+      {label:'eCommerce',data:allYears.map(y=>sum(byYe[y]||[],m)),backgroundColor:'#9cba8ecc',borderRadius:4},
+      {label:'Retail',   data:allYears.map(y=>sum(byYr[y]||[],m)),backgroundColor:'#7ab5c8cc',borderRadius:4}
+    ],{scales:{x:XS,y:YS}});
+
+    // Chart 3: All Channels
+    const filteredY=acFilteredData(data);
+    const custKeysY=[...new Set(filteredY.map(r=>r.Customer))].sort();
+    const byYC={};for(const r of filteredY){const y=String(r.Year);if(!byYC[y])byYC[y]={};byYC[y][r.Customer]=(byYC[y][r.Customer]||0)+(r[m]||0);}
+    if(el_channels) el_channels.textContent=`ALL CHANNELS BREAKOUT · ${acfLabel}`;
+    mkChart('timeChart-channels','bar',allYears,custKeysY.map((ck,i)=>({label:ck,data:allYears.map(y=>byYC[y]?.[ck]||0),backgroundColor:(RETAILER_COLORS[ck]||COLORS[i%COLORS.length])+'cc',borderRadius:4})),{scales:{x:XS,y:YS}});
+  }
+}
+
+function renderStoreChart(data){
+  const m=MK[S.metric];
+  const e=Object.entries(groupBy(data,'Customer')).map(([k,v])=>[k,sum(v,m)]).sort((a,b)=>b[1]-a[1]);
+  const storeTotal=e.reduce((s,x)=>s+x[1],0)||1;
+  if(window['__ch_storeChart'])window['__ch_storeChart'].destroy();
+  // Calculate height dynamically so all labels fit (min 28px per bar)
+  const chartHeight = Math.max(210, e.length * 32);
+  const canvas = document.getElementById('storeChart');
+  canvas.parentElement.style.height = chartHeight + 'px';
+
+  // Inline plugin: draw % label at end of each bar
+  const pctLabelPlugin = {
+    id:'pctLabel',
+    afterDatasetsDraw(chart){
+      const {ctx,data,scales:{x,y}}=chart;
+      ctx.save();
+      ctx.font='600 10px DM Mono, monospace';
+      ctx.fillStyle='#8a6f68';
+      ctx.textAlign='left';
+      ctx.textBaseline='middle';
+      data.datasets[0].data.forEach((val,i)=>{
+        const pct=(val/storeTotal*100).toFixed(1)+'%';
+        const xPos=x.getPixelForValue(val)+4;
+        const yPos=y.getPixelForValue(data.labels[i]);
+        ctx.fillText(pct,xPos,yPos);
+      });
+      ctx.restore();
+    }
+  };
+
+  window['__ch_storeChart']=new Chart(canvas,{
+    type:'bar',
+    data:{
+      labels:e.map(x=>x[0]),
+      datasets:[{
+        data:e.map(x=>x[1]),
+        backgroundColor:e.map(x=>RETAILER_COLORS[x[0]]||'#E8607A'),
+        borderRadius:4
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,
+      maintainAspectRatio:false,
+      layout:{padding:{right:50}},
+      plugins:{legend:{display:false},
+        tooltip:{backgroundColor:'#1A1A1A',titleFont:{family:'DM Mono',size:11},bodyFont:{family:'DM Mono',size:11},padding:10,displayColors:true,
+          callbacks:{label:ctx=>' '+ctx.label+': '+fmt(ctx.raw,S.metric)+' ('+(ctx.raw/storeTotal*100).toFixed(1)+'%)'}}},
+      scales:{
+        x:{grid:{color:'#e8ddd620'},ticks:{font:{family:'DM Mono',size:10},color:'#6B6B6B',callback:v=>fmt(v,S.metric)}},
+        y:{grid:{display:false},ticks:{font:{family:'DM Mono',size:10},color:'#1A1A1A',autoSkip:false,maxRotation:0}}
+      }
+    },
+    plugins:[pctLabelPlugin]
+  });
+}
+
+function renderCatChart(data){
+  const m=MK[S.metric];
+  const e=Object.entries(groupBy(data,'Category')).map(([k,v])=>[k,sum(v,m)]).sort((a,b)=>b[1]-a[1]);
+  const total=e.reduce((s,x)=>s+x[1],0)||1;
+  if(window['__ch_catChart'])window['__ch_catChart'].destroy();
+  window['__ch_catChart']=new Chart(document.getElementById('catChart'),{
+    type:'doughnut',data:{labels:e.map(x=>x[0]),datasets:[{data:e.map(x=>x[1]),backgroundColor:COLORS,borderWidth:1,borderColor:'#faf6f0'}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'right',labels:{font:{family:'DM Mono',size:10},color:'#2d1f1a',boxWidth:12,padding:8,
+          generateLabels:function(chart){
+            const ds=chart.data.datasets[0];
+            return chart.data.labels.map((label,i)=>{
+              const val=ds.data[i];
+              const pct=(val/total*100).toFixed(1);
+              return {text:label+' ('+pct+'%)',fillStyle:Array.isArray(ds.backgroundColor)?ds.backgroundColor[i]:ds.backgroundColor,strokeStyle:'#faf6f0',lineWidth:1,index:i,hidden:false};
+            });
+          }
+        }},
+        tooltip:{backgroundColor:'#1A1A1A',titleFont:{family:'DM Mono',size:11},bodyFont:{family:'DM Mono',size:11},padding:10,displayColors:true,
+          callbacks:{label:ctx=>' '+ctx.label+': '+fmt(ctx.raw,S.metric)+' ('+( ctx.raw/total*100).toFixed(1)+'%)'}}
+      }
+    }
+  });
+}
+
+function renderPivotTable(data){
+  const metric=S.metric; const m=MK[metric]; const g=S.group;
+  const byG=groupBy(data,g);
+  const metricKey = metric; // 'net' | 'gross' | 'units'
+  const metricField = m;    // 'Net Sales' | 'Gross Dollars' | 'Units'
+  let entries=Object.entries(byG).map(([k,rows])=>({k, val:sum(rows,metricField), cnt:rows.length}));
+  const c=S.sortCol||metricKey; entries.sort((a,b)=>(b[c==='net'||c==='gross'||c==='units'?'val':c]-a[c==='net'||c==='gross'||c==='units'?'val':c])*S.sortDir);
+  const totVal=sum(data,metricField);
+  const metricLabel={net:'Net Sales',gross:'Gross Sales',units:'Units'}[metric];
+  function sb(col,lbl){const a=S.sortCol===col||(!S.sortCol&&col===metricKey);const arr=a?(S.sortDir===1?' ↓':' ↑'):'';return`<th class="${a?'sorted':''}" onclick="tableSort('${col}')">${lbl}${arr}</th>`;}
+  const cl={Customer:'Customer',Item:'Product',Category:'Category',Franchise:'Franchise',YM:'Month',Quarter:'Quarter',Year:'Year'};
+  let html=`<table><thead><tr><th style="cursor:default">${cl[g]||g}</th>${sb(metricKey,metricLabel)}</tr></thead><tbody>`;
+  if(!entries.length)html+=`<tr><td colspan="2" style="text-align:center;color:#8a6f68;padding:24px">No data</td></tr>`;
+  for(const e of entries){
+    const pct=totVal?(e.val/totVal*100).toFixed(1):0;
+    html+=`<tr><td>${e.k}</td><td><div>${fmtFull(e.val,metric)}</div><div style="font-size:10px;color:#8a6f68">${pct}%</div></td></tr>`;
+  }
+  html+=`<tr style="background:#fdf5f0;font-weight:600"><td>TOTAL</td><td>${fmtFull(totVal,metric)}</td></tr></tbody></table>`;
+  document.getElementById('pivot-table').innerHTML=html;
+}
+
+/* ============================================================
+   GLOBAL SETTERS
+============================================================ */
+function showTab(t){
+  S.activeTab=t;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+t).classList.add('active');
+  renderAll();
+}
+function setMetric(m){S.metric=m;S.sortCol=null;['net','gross','units'].forEach(x=>document.getElementById('m-'+x).classList.toggle('active',x===m));renderAll();}
+function setChannel(c){S.channel=c;['all','retail','ecomm'].forEach(x=>document.getElementById('ch-'+x).classList.toggle('active',x===c));const s=document.getElementById('sell-type-section');s.style.opacity=c==='ecomm'?'0.4':'1';s.style.pointerEvents=c==='ecomm'?'none':'auto';renderAll();}
+function setSellType(s){
+  S.sellType=s;
+  // sync all tab-local sell types
+  S.bc.sellType=s; S.cat.sellType=s; S.hs.sellType=s;
+  ['thru','in'].forEach(x=>document.getElementById('st-'+x).classList.toggle('active',x===s));
+  // sync in-tab pill buttons
+  document.querySelectorAll('#bc-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===s));
+  document.querySelectorAll('#cat-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===s));
+  document.querySelectorAll('#hs-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===s));
+  renderAll();
+}
+function setTimeAxis(a){S.timeAxis=a;['month','quarter','year'].forEach(x=>document.getElementById('t-'+x).classList.toggle('active',x===a));renderAll();}
+function setGroup(g){S.group=g;S.sortCol=null;document.querySelectorAll('.group-btn').forEach(b=>b.classList.remove('active'));document.getElementById('g-'+g).classList.add('active');renderAll();}
+function tableSort(col){if(S.sortCol===col)S.sortDir*=-1;else{S.sortCol=col;S.sortDir=1;}renderPivotTable(getFiltered());}
+function toggleYear(y){if(S.years.has(y))S.years.delete(y);else S.years.add(y);renderAll();}
+function toggleQtr(q){if(S.quarters.has(q))S.quarters.delete(q);else S.quarters.add(q);renderAll();}
+function toggleStore(s){if(S.stores.has(s))S.stores.delete(s);else S.stores.add(s);updateStoreAllBtn();renderAll();}
+function toggleCat(c){if(S.categories.has(c))S.categories.delete(c);else S.categories.add(c);updateCatAllBtn();renderAll();}
+function toggleAllStores(){if(S.stores.size===ALL_STORES.length){S.stores.clear();document.querySelectorAll('#store-filters input').forEach(cb=>cb.checked=false);}else{S.stores=new Set(ALL_STORES);document.querySelectorAll('#store-filters input').forEach(cb=>cb.checked=true);}updateStoreAllBtn();renderAll();}
+function toggleAllCats(){if(S.categories.size===ALL_CATS.length){S.categories.clear();document.querySelectorAll('#cat-filters input').forEach(cb=>cb.checked=false);}else{S.categories=new Set(ALL_CATS);document.querySelectorAll('#cat-filters input').forEach(cb=>cb.checked=true);}updateCatAllBtn();renderAll();}
+function updateStoreAllBtn(){document.getElementById('store-all-btn').textContent=S.stores.size===ALL_STORES.length?'deselect all':'select all';}
+function updateCatAllBtn(){document.getElementById('cat-all-btn').textContent=S.categories.size===ALL_CATS.length?'deselect all':'select all';}
+
+/* ============================================================
+   RESET
+============================================================ */
+function resetAll(){
+  S={metric:'net',channel:'all',sellType:'in',years:new Set([2023,2024,2025,2026]),quarters:new Set(ALL_QUARTERS),stores:new Set(ALL_STORES),categories:new Set(ALL_CATS),itemSearch:'',group:'Customer',timeAxis:'month',sortCol:null,sortDir:1,activeTab:S.activeTab,
+    bc:{metric:'net',sellType:'in',chan:'all',rowGroup:'customer-category',timeframe:'l12',custFilter:new Set(ALL_STORES),expanded:new Set()},
+    cat:{metric:'net',sellType:'in',chan:'all',rowGroup:'category-customer',timeframe:'l12',expanded:new Set()},
+    hs:{metric:'net',sellType:'in',chan:'all',year:'2025',show:'all',topN:20,trendAxis:'month',sortCol:'val',sortDir:1,timeframe:'l12',viewBy:'all'},
+    ue:{metric:'cost',sellType:'in',chan:'all',rowGroup:'item-customer',expanded:new Set()},
+    funnel:{metric:'net',sellType:'in',chan:'all'}
+  };
+  document.getElementById('item-search').value='';
+  document.querySelectorAll('#year-filters input,#quarter-filters input,#store-filters input,#cat-filters input').forEach(cb=>cb.checked=true);
+  ['net','gross','units'].forEach(x=>document.getElementById('m-'+x).classList.toggle('active',x==='net'));
+  ['all','retail','ecomm'].forEach(x=>document.getElementById('ch-'+x).classList.toggle('active',x==='all'));
+  ['thru','in'].forEach(x=>document.getElementById('st-'+x).classList.toggle('active',x==='in'));
+  ['month','quarter','year'].forEach(x=>document.getElementById('t-'+x).classList.toggle('active',x==='month'));
+  document.getElementById('sell-type-section').style.opacity='1';
+  document.getElementById('sell-type-section').style.pointerEvents='auto';
+  // reset bc pills
+  document.querySelectorAll('#bc-metric-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='net'));
+  document.querySelectorAll('#bc-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='in'));
+  document.querySelectorAll('#bc-chan-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='all'));
+  document.querySelectorAll('#bc-rowgroup-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='customer-category'));
+  document.getElementById('bc-selltype-grp').style.opacity='1';
+  document.getElementById('bc-selltype-grp').style.pointerEvents='auto';
+  // reset cat pills
+  document.querySelectorAll('#cat-metric-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='net'));
+  document.querySelectorAll('#cat-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='in'));
+  document.querySelectorAll('#cat-chan-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='all'));
+  document.querySelectorAll('#cat-rowgroup-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='category-customer'));
+  document.getElementById('cat-selltype-grp').style.opacity='1';
+  document.getElementById('cat-selltype-grp').style.pointerEvents='auto';
+  // reset hero sku pills
+  document.querySelectorAll('#hs-metric-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='net'));
+  document.querySelectorAll('#hs-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='in'));
+  document.querySelectorAll('#hs-chan-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='all'));
+  document.querySelectorAll('#hs-year-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='2025'));
+  document.querySelectorAll('#hs-show-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='all'));
+  document.querySelectorAll('#hs-topn-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='20'));
+  document.querySelectorAll('#hs-viewby-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='all'));
+  ['month','quarter','year'].forEach(x=>document.getElementById('hst-'+x)?.classList.toggle('active',x==='month'));
+  document.getElementById('hs-selltype-grp').style.opacity='1';
+  document.getElementById('hs-selltype-grp').style.pointerEvents='auto';
+  // reset unit economics pills
+  document.querySelectorAll('#ue-metric-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='cost'));
+  document.querySelectorAll('#ue-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='in'));
+  document.querySelectorAll('#ue-chan-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='all'));
+  document.querySelectorAll('#ue-rowgroup-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='item-customer'));
+  document.getElementById('ue-selltype-grp').style.opacity='1';
+  document.getElementById('ue-selltype-grp').style.pointerEvents='auto';
+  // reset funnel pills
+  document.querySelectorAll('#funnel-metric-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='net'));
+  document.querySelectorAll('#funnel-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='in'));
+  document.querySelectorAll('#funnel-chan-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='all'));
+  document.getElementById('funnel-selltype-grp').style.opacity='1';
+  document.getElementById('funnel-selltype-grp').style.pointerEvents='auto';
+  updateStoreAllBtn();updateCatAllBtn();
+  buildCustPills();
+  buildTimeframeBtns();
+  OV={period:'l12m',comp:'py',chartView:'total',acFilter:'both'};
+  syncAllPeriodPills('l12m');
+  syncSidebarToOvPeriod();
+  renderAll();
+}
+
+/* ============================================================
+   HERO SKU ENGINE
+============================================================ */
+
+// Per-item first YM in data (launch proxy)
+const ITEM_LAUNCH = {};
+const ITEM_INNO   = {};
+const ITEM_CAT    = {};
+const ITEM_FRAN   = {};
+for(const r of RAW_DATA){
+  const item = r.Item;
+  if(!item) continue;
+  if(!ITEM_LAUNCH[item] || r.YM < ITEM_LAUNCH[item]) ITEM_LAUNCH[item] = r.YM;
+  if(r.Innovation && !ITEM_INNO[item]) ITEM_INNO[item] = r.Innovation;
+  if(r.Category && !ITEM_CAT[item])   ITEM_CAT[item]  = r.Category;
+  if(r.Franchise && !ITEM_FRAN[item]) ITEM_FRAN[item] = r.Franchise;
+}
+
+function getHSFiltered(){
+  const hs = S.hs;
+  const colKeys = ovPeriodToColKeys();
+  const colSet = new Set(colKeys);
+  const tfYears = new Set(colKeys.map(ym=>parseInt(ym.split('-')[0])));
+  const tfQuarters = new Set(colKeys.map(ym=>{const mo=parseInt(ym.split('-')[1]);return mo<=3?'Q1':mo<=6?'Q2':mo<=9?'Q3':'Q4';}));
+  let data = getFilteredForTab({ chan: hs.chan, stype: hs.sellType, years: tfYears, quarters: tfQuarters })
+    .filter(r => {
+      if(!colSet.has(r.YM)) return false;
+      if(hs.viewBy === 'category'  && !r.Category)  return false;
+      if(hs.viewBy === 'franchise' && !r.Franchise) return false;
+      if(hs.viewBy === 'format'    && !r.Format)    return false;
+      return true;
+    });
+  return { data, colKeys };
+}
+
+function buildSKUStats(data){
+  // For each item: total, prev-year total, monthly sparkline, YoY
+  const mk_ = MK[S.hs.metric];
+
+  // curYear: use hs.year if explicitly set, otherwise latest year in data
+  const years = [...new Set(data.map(r=>r.Year))].sort();
+  const curYear = S.hs.year !== 'all'
+    ? parseInt(S.hs.year)
+    : (years.length ? Math.max(...years) : new Date().getFullYear());
+  const prevYear = curYear - 1;
+
+  const byItem = {};
+  for(const r of data){
+    const item = r.Item; if(!item) continue;
+    if(!byItem[item]) byItem[item] = { total:0, curVal:0, prevVal:0, byYM:{} };
+    const s = byItem[item];
+    const v = r[mk_] || 0;
+    s.total += v;
+    if(r.Year === curYear)  s.curVal  += v;
+    if(r.Year === prevYear) s.prevVal += v;
+    s.byYM[r.YM] = (s.byYM[r.YM]||0) + v;
+  }
+
+  // Build array of SKU stats
+  let skus = Object.entries(byItem).map(([item, s]) => {
+    const yoy = s.prevVal > 0 ? ((s.curVal / s.prevVal) - 1) * 100 : null;
+    const launch = ITEM_LAUNCH[item] || '2023-01';
+    const inno   = ITEM_INNO[item] || 'Base';
+    const isNew  = launch >= `${curYear}-01`; // launched in current year
+    return { item, ...s, yoy, launch, inno, isNew,
+             cat: ITEM_CAT[item], fran: ITEM_FRAN[item] };
+  });
+
+  // Filter by show mode
+  const show = S.hs.show;
+  if(show === 'base')  skus = skus.filter(s => s.inno === 'Base');
+  if(show === 'innov') skus = skus.filter(s => s.inno !== 'Base' && s.inno !== 'Other');
+  if(show === 'new')   skus = skus.filter(s => s.isNew);
+
+  // Sort by selected metric value descending
+  const sc = S.hs.sortCol;
+  skus.sort((a,b) => {
+    if(sc === 'yoy')   return (((b.yoy??-999) - (a.yoy??-999)) * S.hs.sortDir);
+    if(sc === 'prev')  return (b.prevVal - a.prevVal) * S.hs.sortDir;
+    if(sc === 'units') return (b.total - a.total) * S.hs.sortDir; // fallback total
+    return (b.total - a.total) * S.hs.sortDir; // default: val
+  });
+
+  return { skus, curYear, prevYear };
+}
+
+function renderHeroTab(){
+  const hs = S.hs;
+  const { data, colKeys } = getHSFiltered();
+
+  // ViewBy grouping
+  const viewByField = {all:null, category:'Category', franchise:'Franchise', format:'Format'}[hs.viewBy];
+
+  // Build sections
+  let renderSections = [];
+  if(!viewByField){
+    const { skus, curYear, prevYear } = buildSKUStats(data);
+    renderSections = [{label: null, skus, curYear, prevYear}];
+  } else {
+    const groups = {};
+    for(const r of data){
+      const key = r[viewByField] || '(none)';
+      if(!groups[key]) groups[key] = [];
+      groups[key].push(r);
+    }
+    const mk_ = MK[hs.metric];
+    const sortedGroups = Object.entries(groups).sort((a,b)=>{
+      return b[1].reduce((s,r)=>s+(r[mk_]||0),0) - a[1].reduce((s,r)=>s+(r[mk_]||0),0);
+    });
+    for(const [label, gdata] of sortedGroups){
+      const { skus, curYear, prevYear } = buildSKUStats(gdata);
+      renderSections.push({label, skus, curYear, prevYear});
+    }
+  }
+
+  // ---- CARDS ----
+  let gridHtml = '';
+  let globalRank = 1;
+  for(const section of renderSections){
+    const { label, skus, curYear, prevYear } = section;
+    const topSkus = skus.slice(0, hs.topN === 999 ? skus.length : hs.topN);
+    const maxVal = topSkus.length ? topSkus[0].total : 1;
+
+    if(label !== null){
+      gridHtml += `<div style="grid-column:1/-1;padding:8px 2px 2px;font-size:11px;font-weight:600;color:var(--deep);letter-spacing:0.08em;text-transform:uppercase;border-top:1px solid var(--line);margin-top:6px">${label}</div>`;
+    }
+
+    topSkus.forEach((s, i) => {
+      const rank = label !== null ? i+1 : globalRank++;
+      const rankClass = rank <= 3 ? 'top3' : '';
+      const yoyHtml = s.yoy !== null
+        ? `<div class="hs-yoy ${s.yoy>=5?'pos':s.yoy<=-5?'neg':'flat'}">${s.yoy>=0?'+':''}${s.yoy.toFixed(1)}% YoY</div>`
+        : `<div class="hs-yoy flat">—</div>`;
+      const innovBadge = s.inno !== 'Base' && s.inno !== 'Other' ? `<span class="hs-badge hs-badge-innov">★ ${s.inno}</span>` : '';
+      const newBadge = s.isNew ? `<span class="hs-badge hs-badge-new">🚀 New ${s.launch.slice(0,7)}</span>` : '';
+      const catBadge = s.cat ? `<span class="hs-badge hs-badge-cat">${s.cat}</span>` : '';
+      const declineBadge = s.yoy !== null && s.yoy < -15 ? `<span class="hs-badge hs-badge-decline">▼ Declining</span>` : '';
+      const growthBadge = s.yoy !== null && s.yoy > 30 ? `<span class="hs-badge hs-badge-growth">▲ Growing</span>` : '';
+      const barW = Math.max(2, Math.round((s.total / maxVal) * 100));
+      const since = s.isNew ? `Since ${s.launch.slice(0,7)}` : (hs.year==='all' ? `2023–${curYear}` : String(curYear));
+      const allYMs = [...new Set(data.map(r=>r.YM))].sort();
+      const recentYMs = allYMs.slice(-12);
+      const sparkVals = recentYMs.map(ym => s.byYM[ym]||0);
+      const sparkMax  = Math.max(...sparkVals, 1);
+      const sparkPts  = sparkVals.length < 2
+        ? `0,14 180,14`
+        : sparkVals.map((v,xi) => {
+        const x = (xi / (sparkVals.length-1)) * 180;
+        const y = 28 - (v/sparkMax)*24;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      }).join(' ');
+      gridHtml += `
+    <div class="hs-card" data-cat="${s.cat||''}">
+      <div class="hs-card-top">
+        <div class="hs-rank ${rankClass}">#${rank}</div>
+        <div class="hs-name">${s.item}</div>
+      </div>
+      <div class="hs-badges">${catBadge}${innovBadge}${newBadge}${growthBadge}${declineBadge}</div>
+      <div class="hs-value">${fmt(s.total, hs.metric)}</div>
+      ${yoyHtml}
+      <div class="hs-bar-wrap"><div class="hs-bar" style="width:${barW}%"></div></div>
+      <svg class="hs-sparkline" viewBox="0 0 180 30" preserveAspectRatio="none" style="width:100%;overflow:visible">
+        <polyline points="${sparkPts}" fill="none" stroke="var(--rose)" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+      <div class="hs-sub">${since} · ${s.fran || s.cat || ''}</div>
+    </div>`;
+    });
+  }
+  document.getElementById('hs-grid').innerHTML = gridHtml || '<div style="padding:32px;text-align:center;color:var(--muted)">No data for selected filters.</div>';
+
+  // ---- TREND CHART ---- (uses full data, top 8 SKUs overall)
+  const { skus: allSkus, curYear: tCurYear, prevYear: tPrevYear } = buildSKUStats(data);
+  const trendSkus = allSkus.slice(0, 8);
+  const TREND_COLORS = ['#e8856a','#7ab5c8','#9cba8e','#d4a574','#b8a0c8','#a8c8a0','#c8a890','#8090c8'];
+  let trendLabels, trendDatasets;
+
+  if(hs.trendAxis === 'month'){
+    trendLabels = [...new Set(data.map(r=>r.YM))].sort();
+    trendDatasets = trendSkus.map((s,i)=>({
+      label: s.item,
+      data: trendLabels.map(ym => s.byYM[ym]||0),
+      borderColor: TREND_COLORS[i], backgroundColor: 'transparent',
+      tension:0.3, pointRadius:1.5, borderWidth:2
+    }));
+  } else if(hs.trendAxis === 'quarter'){
+    const qMap = {};
+    for(const r of data){
+      const q = `${r.Year} ${r.Quarter||'Q?'}`;
+      if(!qMap[q]) qMap[q]={};
+      if(!qMap[q][r.Item]) qMap[q][r.Item]=0;
+      qMap[q][r.Item] += r[MK[hs.metric]]||0;
+    }
+    trendLabels = Object.keys(qMap).sort();
+    trendDatasets = trendSkus.map((s,i)=>({
+      label: s.item,
+      data: trendLabels.map(q => qMap[q]?.[s.item]||0),
+      backgroundColor: TREND_COLORS[i]+'cc', borderRadius:3
+    }));
+  } else {
+    const yMap = {};
+    for(const r of data){
+      const y = String(r.Year);
+      if(!yMap[y]) yMap[y]={};
+      if(!yMap[y][r.Item]) yMap[y][r.Item]=0;
+      yMap[y][r.Item] += r[MK[hs.metric]]||0;
+    }
+    trendLabels = Object.keys(yMap).sort();
+    trendDatasets = trendSkus.map((s,i)=>({
+      label: s.item,
+      data: trendLabels.map(y => yMap[y]?.[s.item]||0),
+      backgroundColor: TREND_COLORS[i]+'cc', borderRadius:3
+    }));
+  }
+
+  const trendType = hs.trendAxis==='month' ? 'line' : 'bar';
+  if(window.__hs_trend) window.__hs_trend.destroy();
+  window.__hs_trend = new Chart(document.getElementById('hsTrendChart'),{
+    type: trendType,
+    data: { labels: trendLabels, datasets: trendDatasets },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ display:true, labels:{ font:{family:'DM Mono',size:9}, color:'#8a6f68', boxWidth:10, padding:6 } },
+        tooltip:{ backgroundColor:'#2d1f1a', titleFont:{family:'DM Mono',size:10}, bodyFont:{family:'DM Mono',size:10},
+          padding:8, callbacks:{ label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.raw, hs.metric)}` } }
+      },
+      scales:{
+        x:{ grid:{display:false}, ticks:{font:{family:'DM Mono',size:9}, color:'#8a6f68', maxRotation:45} },
+        y:{ grid:{color:'#e8ddd640'}, ticks:{font:{family:'DM Mono',size:9}, color:'#8a6f68', callback:v=>fmt(v,hs.metric)} }
+      }
+    }
+  });
+  document.getElementById('hs-trend-subtitle').textContent = `TOP ${Math.min(8,trendSkus.length)} SKUs · ${hs.trendAxis.toUpperCase()}`;
+
+  // ---- SCORECARD TABLE ----
+  const { skus: tableSkusAll, curYear, prevYear } = buildSKUStats(data);
+  const allYMs_ = [...new Set(data.map(r=>r.YM))].sort();
+  const curYMs  = allYMs_.filter(ym => ym.startsWith(String(curYear)));
+  const prevYMs = allYMs_.filter(ym => ym.startsWith(String(prevYear)));
+
+  function cellYoY(curr, prev){
+    if(!prev) return '<td>—</td>';
+    const p = ((curr/prev)-1)*100;
+    const cls = p>=5?'pos':p<=-5?'neg':'';
+    const lbl = (p>=0?'+':'')+p.toFixed(1)+'%';
+    return `<td><span class="tbl-yoy ${cls}">${lbl}</span></td>`;
+  }
+
+  const sc2 = S.hs.sortCol; const sd = S.hs.sortDir;
+  const LAUNCH_COLOUR = { 'Base':'#7ab5c8', '2025 Innovation':'#f2a65a', '2026 Innovation':'#9cba8e', 'Other':'#c8c0b8' };
+
+  function sortArrow(col){ return S.hs.sortCol===col ? (S.hs.sortDir===1?' ↓':' ↑') : ''; }
+  function thSort(col, label){ return `<th class="${S.hs.sortCol===col?'sorted':''}" onclick="hsTableSort('${col}')">${label}${sortArrow(col)}</th>`; }
+
+  let tblHtml = `<table id="hs-table">
+  <thead><tr>
+    <th style="cursor:default;text-align:left">SKU</th>
+    <th style="cursor:default">Tier</th>
+    <th style="cursor:default">Launch</th>
+    ${thSort('val', String(curYear)+' Total')}
+    ${thSort('prev', String(prevYear)+' Total')}
+    ${thSort('yoy', 'YoY %')}
+    <th style="cursor:default">Share of Wallet</th>
+    <th style="cursor:default;text-align:left">Trend</th>
+  </tr></thead><tbody>`;
+
+  const grandTotal = tableSkusAll.reduce((s,x)=>s+x.total,0)||1;
+  const tableSkus = [...tableSkusAll].sort((a,b)=>{
+    if(sc2==='yoy')  return ((b.yoy??-999)-(a.yoy??-999))*sd;
+    if(sc2==='prev') return (b.prevVal-a.prevVal)*sd;
+    return (b.total-a.total)*sd;
+  });
+
+  for(const s of tableSkus){
+    const shareW = Math.max(1, Math.round((s.total/grandTotal)*100*3));
+    const lc = LAUNCH_COLOUR[s.inno] || '#c8c0b8';
+    const innovLabel = s.inno === 'Base' ? '◉ Core' : `★ ${s.inno.replace(' Innovation','')}`;
+    const innovStyle = s.inno === 'Base' ? 'color:var(--sell-in)' : 'color:#b85c10';
+    const recentYMs2 = allYMs_.slice(-8);
+    const spkVals = recentYMs2.map(ym=>s.byYM[ym]||0);
+    const spkMax  = Math.max(...spkVals, 1);
+    const spkPts  = spkVals.length < 2
+      ? `0,7 60,7`
+      : spkVals.map((v,xi)=>{
+      const x = (xi/(spkVals.length-1))*60;
+      const y = 14-(v/spkMax)*12;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+
+    tblHtml += `<tr>
+      <td><span class="launch-dot" style="background:${lc}"></span>${s.item}</td>
+      <td style="text-align:center;${innovStyle};font-size:10px;white-space:nowrap">${innovLabel}</td>
+      <td style="text-align:center;font-size:10px;color:var(--muted)">${s.launch.slice(0,7)}</td>
+      <td style="font-weight:600">${fmtFull(s.curVal, hs.metric)}</td>
+      <td style="color:var(--muted)">${fmtFull(s.prevVal, hs.metric)}</td>
+      ${cellYoY(s.curVal, s.prevVal)}
+      <td class="tbl-bar-cell">
+        <div class="tbl-bar-inner" style="width:${shareW}px;max-width:120px"></div>
+        <span style="font-size:9px;color:var(--muted);margin-left:4px">${(s.total/grandTotal*100).toFixed(1)}%</span>
+      </td>
+      <td style="text-align:left">
+        <svg viewBox="0 0 60 14" style="width:60px;height:14px;overflow:visible">
+          <polyline points="${spkPts}" fill="none" stroke="var(--rose)" stroke-width="1.2" stroke-linejoin="round"/>
+        </svg>
+      </td>
+    </tr>`;
+  }
+  tblHtml += `</tbody></table>`;
+  document.getElementById('hs-table-wrap').innerHTML = tblHtml;
+}
+
+/* HERO SKU SETTERS */
+function setHSMetric(v){
+  S.hs.metric=v;
+  document.querySelectorAll('#hs-metric-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===v));
+  renderHeroTab();
+}
+function setHSSellType(v){
+  S.sellType=v;
+  S.bc.sellType=v; S.cat.sellType=v; S.hs.sellType=v;
+  ['thru','in'].forEach(x=>document.getElementById('st-'+x).classList.toggle('active',x===v));
+  document.querySelectorAll('#bc-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===v));
+  document.querySelectorAll('#cat-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===v));
+  document.querySelectorAll('#hs-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===v));
+  renderHeroTab();
+}
+function setHSChan(v){
+  S.hs.chan=v;
+  document.querySelectorAll('#hs-chan-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===v));
+  const stGrp=document.getElementById('hs-selltype-grp');
+  if(stGrp){stGrp.style.opacity=v==='ecomm'?'0.35':'1';stGrp.style.pointerEvents=v==='ecomm'?'none':'auto';}
+  renderHeroTab();
+}
+function setHSYear(v){
+  S.hs.year=v;
+  document.querySelectorAll('#hs-year-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===v));
+  renderHeroTab();
+}
+function setHSShow(v){
+  S.hs.show=v;
+  document.querySelectorAll('#hs-show-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===v));
+  renderHeroTab();
+}
+function setHSTopN(v){
+  S.hs.topN=v;
+  document.querySelectorAll('#hs-topn-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===String(v)));
+  renderHeroTab();
+}
+function setHSTrendAxis(v){
+  S.hs.trendAxis=v;
+  ['month','quarter','year'].forEach(x=>document.getElementById('hst-'+x).classList.toggle('active',x===v));
+  renderHeroTab();
+}
+function setHSTimeframe(tf){
+  S.hs.timeframe=tf;
+  document.querySelectorAll('#hs-timeframe .tf-btn').forEach(b=>b.classList.toggle('active',b.dataset.tf===tf));
+  renderHeroTab();
+}
+function setHSViewBy(v){
+  S.hs.viewBy=v;
+  document.querySelectorAll('#hs-viewby-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===v));
+  renderHeroTab();
+}
+function hsTableSort(col){
+  if(S.hs.sortCol===col) S.hs.sortDir*=-1;
+  else { S.hs.sortCol=col; S.hs.sortDir=1; }
+  renderHeroTab();
+}
+
+/* ============================================================
+   RENDER ALL
+============================================================ */
+function renderAll(){
+  if(S.activeTab==='overview'){
+    const data=getFiltered();
+    const ovYMs=getOvYMs();
+    const timeData=data.filter(r=>ovYMs.includes(r.YM));
+    renderKPIs(data);renderTimeChart(timeData);renderStoreChart(timeData);renderCatChart(timeData);renderPivotTable(timeData);
+  } else if(S.activeTab==='by-customer'){
+    renderBCTab();
+  } else if(S.activeTab==='by-category'){
+    renderCatTab();
+  } else if(S.activeTab==='unit-econ'){
+    renderUnitEconTab();
+  } else if(S.activeTab==='funnel'){
+    renderFunnelTab();
+  } else if(S.activeTab==='hero-sku'){
+    renderHeroTab();
+  }
+}
+
+
+
+
+/* ============================================================
+   INIT BUILDERS
+============================================================ */
+/* ============================================================
+   INIT BUILDERS
+============================================================ */
+function buildSidebarFilters(){
+  let h='';for(const y of ALL_YEARS)h+=`<label class="filter-chip"><input type="checkbox" id="y-${y}" checked onchange="toggleYear(${y})"><label for="y-${y}">${y}</label></label>`;
+  document.getElementById('year-filters').innerHTML=h;
+  h='';for(const q of ALL_QUARTERS)h+=`<label class="filter-chip"><input type="checkbox" id="q-${q}" checked onchange="toggleQtr('${q}')"><label for="q-${q}">${q}</label></label>`;
+  document.getElementById('quarter-filters').innerHTML=h;
+  h='';for(const s of ALL_STORES){const e=s.replace(/'/g,"\\'");h+=`<div class="filter-chip"><input type="checkbox" id="ss-${s}" checked onchange="toggleStore('${e}')"><label for="ss-${s}">${s}</label></div>`;}
+  document.getElementById('store-filters').innerHTML=h;
+  h='';for(const c of ALL_CATS){const e=c.replace(/'/g,"\\'");h+=`<div class="filter-chip"><input type="checkbox" id="cc-${c}" checked onchange="toggleCat('${e}')"><label for="cc-${c}">${c}</label></div>`;}
+  document.getElementById('cat-filters').innerHTML=h;
+}
+
+function buildTimeframeBtns(){
+  // No-op: timeframes are now static pill groups synced via syncAllPeriodPills
+}
+
+function buildCustPills(){
+  const f=S.bc.custFilter;
+  document.getElementById('bc-cust-pills').innerHTML=ALL_STORES.map(s=>
+    `<button class="cust-pill ${f.has(s)?'active':''}" onclick="toggleBCCust('${s.replace(/'/g,"\\'")}')">${s}</button>`
+  ).join('');
+}
+
+
+function initDashboard(){
+  // S.stores/S.categories/S.bc.custFilter were captured as empty Sets when
+  // ALL_STORES/ALL_CATS were still empty at script-parse time; resync now
+  // that real data has loaded (every load starts with everything selected).
+  S.stores = new Set(ALL_STORES);
+  S.categories = new Set(ALL_CATS);
+  S.bc.custFilter = new Set(ALL_STORES);
+  buildSidebarFilters();
+  buildTimeframeBtns();
+  buildCustPills();
+  syncAllPeriodPills(OV.period);
+  syncSidebarToOvPeriod();
+  renderAll();
+}
+
+function setRefreshing(isRefreshing){
+  const btn = document.getElementById('refresh-btn');
+  const banner = document.getElementById('loading-banner');
+  btn.disabled = isRefreshing;
+  banner.style.display = isRefreshing ? 'block' : 'none';
+}
+
+function showLoadError(msg){
+  const banner = document.getElementById('error-banner');
+  banner.textContent = msg;
+  banner.style.display = 'block';
+}
+
+function hideLoadError(){
+  document.getElementById('error-banner').style.display = 'none';
+}
+
+function cleanRow(r){
+  if(!r || !r.YM) return null;
+  return {
+    YM: String(r.YM),
+    Year: Number(r.Year),
+    Month: Number(r.Month),
+    Quarter: String(r.Quarter),
+    Channel: String(r.Channel),
+    Customer: String(r.Customer),
+    Category: r.Category ? String(r.Category) : '',
+    Item: String(r.Item),
+    Franchise: r.Franchise ? String(r.Franchise) : '',
+    Format: r.Format ? String(r.Format) : '',
+    Innovation: r.Innovation ? String(r.Innovation) : '',
+    SellType: String(r.SellType),
+    Units: Number(r.Units) || 0,
+    "Net Sales": Number(r["Net Sales"]) || 0,
+    "Gross Dollars": Number(r["Gross Dollars"]) || 0,
+    Department: r.Department ? String(r.Department) : '',
+    SRP: Number(r.SRP) || 0,
+    COGS: Number(r.COGS) || 0,
+    Funnel: r.Funnel ? String(r.Funnel) : ''
+  };
+}
+
+async function loadData(){
+  if(CSV_URL.indexOf('PASTE_YOUR_PUBLISHED_CSV_URL_HERE') !== -1){
+    showLoadError('Set CSV_URL near the top of the script to your published Google Sheets CSV link.');
+    return;
+  }
+  setRefreshing(true);
+  hideLoadError();
+  try {
+    const sep = CSV_URL.indexOf('?') === -1 ? '?' : '&';
+    const bustedUrl = CSV_URL + sep + '_ts=' + Date.now();
+    const res = await fetch(bustedUrl, {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
+    const csvText = await res.text();
+    const parsed = Papa.parse(csvText, {header:true, dynamicTyping:true, skipEmptyLines:true});
+    if(parsed.errors && parsed.errors.length){
+      console.warn('CSV parse warnings:', parsed.errors.slice(0,5));
+    }
+    const rows = parsed.data.map(cleanRow).filter(Boolean);
+    if(rows.length === 0) throw new Error('No usable rows found in the CSV.');
+    RAW_DATA = rows;
+    deriveLookups();
+    document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleString();
+    initDashboard();
+  } catch(err){
+    showLoadError('Failed to load data — ' + err.message);
+  } finally {
+    setRefreshing(false);
+  }
+}
+
+document.getElementById('refresh-btn').addEventListener('click', loadData);
+loadData();
+</script>
+
+</body></html>
