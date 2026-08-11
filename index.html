@@ -284,7 +284,7 @@ tbody td:first-child{text-align:left;font-weight:500;}
   </div>
   <div class="sidebar-section">
     <span class="section-label">Search Item</span>
-    <input class="search-box" type="text" placeholder="Search products..." id="item-search" oninput="renderAll()">
+    <input class="search-box" type="text" placeholder="Search products..." id="item-search" oninput="setItemSearch(this.value)">
   </div>
 </aside>
 
@@ -846,7 +846,7 @@ tbody td:first-child{text-align:left;font-weight:500;}
    DATA SOURCE — published Google Sheets CSV
    ============================================================ */
 // Paste the "Publish to web" CSV link for your Dashboard CSV tab here.
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRtN1p2PmGyiDPadsGeP7hnt4PPZpB46mpEFvV5_VERlvdNlURuGgB9iwV0_VUwTkxChEeLybRgNrZw/pub?gid=0&single=true&output=csv";
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRtN1p2PmGyiDPadsGeP7hnt4PPZpB46mpEFvV5_VERlvdNlURuGgB9iwV0_VUwTkxChEeLybRgNrZw/pub?gid=0&single=true*git=csv";
 
 let RAW_DATA = [];
 let ALL_STORES = [], ALL_CATS = [], ALL_YEARS = [], ALL_YMS = [];
@@ -857,6 +857,7 @@ function deriveLookups(){
   ALL_CATS   = [...new Set(RAW_DATA.map(r=>r.Category).filter(Boolean))].sort();
   ALL_YEARS  = [...new Set(RAW_DATA.map(r=>r.Year))].sort();
   ALL_YMS    = [...new Set(RAW_DATA.map(r=>r.YM))].sort();
+  buildItemLookups();
 }
 
 /* ============================================================
@@ -1401,6 +1402,7 @@ const FUNNEL_GROUPS = [
 ];
 
 function getFunnelFilteredData(chan, stype){
+  const search = S.itemSearch.toLowerCase();
   return RAW_DATA.filter(r=>{
     if(chan==='retail' && r.Channel!=='Retail')   return false;
     if(chan==='ecomm'  && r.Channel!=='eCommerce') return false;
@@ -1408,6 +1410,7 @@ function getFunnelFilteredData(chan, stype){
       if(stype==='thru' && r.SellType!=='Sell Thru') return false;
       if(stype==='in'   && r.SellType!=='Sell In')   return false;
     }
+    if(search && !r.Item.toLowerCase().includes(search)) return false;
     return true;
   });
 }
@@ -1521,6 +1524,10 @@ function setFunnelViewBy(val){
   S.funnel.viewBy=val;
   document.querySelectorAll('#funnel-viewby-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===val));
   renderFunnelTab();
+}
+function setItemSearch(val){
+  S.itemSearch=val;
+  renderAll();
 }
 function setBCTimeframe(tf){
   S.bc.timeframe=tf;
@@ -1930,17 +1937,22 @@ function resetAll(){
 ============================================================ */
 
 // Per-item first YM in data (launch proxy)
-const ITEM_LAUNCH = {};
-const ITEM_INNO   = {};
-const ITEM_CAT    = {};
-const ITEM_FRAN   = {};
-for(const r of RAW_DATA){
-  const item = r.Item;
-  if(!item) continue;
-  if(!ITEM_LAUNCH[item] || r.YM < ITEM_LAUNCH[item]) ITEM_LAUNCH[item] = r.YM;
-  if(r.Innovation && !ITEM_INNO[item]) ITEM_INNO[item] = r.Innovation;
-  if(r.Category && !ITEM_CAT[item])   ITEM_CAT[item]  = r.Category;
-  if(r.Franchise && !ITEM_FRAN[item]) ITEM_FRAN[item] = r.Franchise;
+let ITEM_LAUNCH = {};
+let ITEM_INNO   = {};
+let ITEM_CAT    = {};
+let ITEM_FRAN   = {};
+// Must be called after RAW_DATA is populated (see deriveLookups()) — building
+// this from RAW_DATA before the CSV loads would leave every lookup empty.
+function buildItemLookups(){
+  ITEM_LAUNCH = {}; ITEM_INNO = {}; ITEM_CAT = {}; ITEM_FRAN = {};
+  for(const r of RAW_DATA){
+    const item = r.Item;
+    if(!item) continue;
+    if(!ITEM_LAUNCH[item] || r.YM < ITEM_LAUNCH[item]) ITEM_LAUNCH[item] = r.YM;
+    if(r.Innovation && !ITEM_INNO[item]) ITEM_INNO[item] = r.Innovation;
+    if(r.Category && !ITEM_CAT[item])   ITEM_CAT[item]  = r.Category;
+    if(r.Franchise && !ITEM_FRAN[item]) ITEM_FRAN[item] = r.Franchise;
+  }
 }
 
 function getHSFiltered(){
