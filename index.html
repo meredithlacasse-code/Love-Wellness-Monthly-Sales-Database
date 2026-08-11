@@ -839,7 +839,7 @@ tbody td:first-child{text-align:left;font-weight:500;}
    DATA SOURCE — published Google Sheets CSV
    ============================================================ */
 // Paste the "Publish to web" CSV link for your Dashboard CSV tab here.
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRtN1p2PmGyiDPadsGeP7hnt4PPZpB46mpEFvV5_VERlvdNlURuGgB9iwV0_VUwTkxChEeLybRgNrZw/pubhtml?gid=0&single=true";
+const CSV_URL = "PASTE_YOUR_PUBLISHED_CSV_URL_HERE";
 
 let RAW_DATA = [];
 let ALL_STORES = [], ALL_CATS = [], ALL_YEARS = [], ALL_YMS = [];
@@ -2392,7 +2392,7 @@ function cleanRow(r){
 }
 
 async function loadData(){
-  if(CSV_URL.indexOf('PASTE_YOUR_PUBLISHED_CSV_URL_HERE') !== -1){
+  if(CSV_URL.indexOf('https://docs.google.com/spreadsheets/d/e/2PACX-1vRtN1p2PmGyiDPadsGeP7hnt4PPZpB46mpEFvV5_VERlvdNlURuGgB9iwV0_VUwTkxChEeLybRgNrZw/pubhtml?gid=0&single=true') !== -1){
     showLoadError('Set CSV_URL near the top of the script to your published Google Sheets CSV link.');
     return;
   }
