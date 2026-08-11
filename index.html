@@ -621,6 +621,13 @@ tbody td:first-child{text-align:left;font-weight:500;}
           <button class="pill-btn" data-val="ecomm" onclick="setLocalChan(&#39;funnel&#39;,&#39;ecomm&#39;)">eComm</button>
         </div>
       </div>
+      <div class="hm-toolbar-group">
+        <span class="ctrl-label">View by</span>
+        <div class="pill-group" id="funnel-viewby-grp">
+          <button class="pill-btn active" data-val="franchise" onclick="setFunnelViewBy(&#39;franchise&#39;)">Franchise</button>
+          <button class="pill-btn" data-val="item" onclick="setFunnelViewBy(&#39;item&#39;)">Product</button>
+        </div>
+      </div>
     </div>
     <div class="hm-toolbar">
       <div class="hm-toolbar-group">
@@ -1028,7 +1035,7 @@ let S = {
   ue: { metric:'cost', sellType:'in', chan:'all',
         rowGroup:'item-customer', expanded: new Set() },
   // funnel tab local (full-business scope — ignores customer/category sidebar filters)
-  funnel: { metric:'net', sellType:'in', chan:'all' },
+  funnel: { metric:'net', sellType:'in', chan:'all', viewBy:'franchise' },
 };
 
 /* ============================================================
@@ -1415,17 +1422,19 @@ function centeredMovingAvg3(series){
   });
 }
 
-function computeFunnelSeries(chan, stype, metric){
+function computeFunnelSeries(chan, stype, metric, viewBy){
   const raw = getFunnelFilteredData(chan, stype);
   const mk_ = MK[metric];
+  const breakoutKey = viewBy==='item' ? 'Item' : 'Franchise';
   const result = {};
   for(const {key} of FUNNEL_GROUPS){
     const rowsForFunnel = raw.filter(r=>r.Funnel===key);
-    const items = [...new Set(rowsForFunnel.map(r=>r.Item))];
+    const items = [...new Set(rowsForFunnel.map(r=>r[breakoutKey]||'(none)'))];
     const perItemMonthly = {};
     for(const it of items) perItemMonthly[it]={};
     for(const r of rowsForFunnel){
-      perItemMonthly[r.Item][r.YM] = (perItemMonthly[r.Item][r.YM]||0) + (r[mk_]||0);
+      const bk = r[breakoutKey]||'(none)';
+      perItemMonthly[bk][r.YM] = (perItemMonthly[bk][r.YM]||0) + (r[mk_]||0);
     }
     const smoothed = {};
     for(const it of items){
@@ -1447,7 +1456,7 @@ function computeFunnelSeries(chan, stype, metric){
 function renderFunnelTab(){
   const fnl = S.funnel;
   const colKeys = ovPeriodToColKeys();
-  const series = computeFunnelSeries(fnl.chan, fnl.sellType, fnl.metric);
+  const series = computeFunnelSeries(fnl.chan, fnl.sellType, fnl.metric, fnl.viewBy);
   FUNNEL_GROUPS.forEach(({key,canvasId})=>{
     const {items,smoothed} = series[key];
     const sortedItems=[...items].sort((a,b)=>{
@@ -1507,6 +1516,11 @@ function setLocalRowGroup(scope, val){
   S[scope].expanded=new Set(); // reset expansions on re-group
   document.querySelectorAll(`#${scope}-rowgroup-grp .pill-btn`).forEach(b=>b.classList.toggle('active',b.dataset.val===val));
   renderScopeTab(scope);
+}
+function setFunnelViewBy(val){
+  S.funnel.viewBy=val;
+  document.querySelectorAll('#funnel-viewby-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===val));
+  renderFunnelTab();
 }
 function setBCTimeframe(tf){
   S.bc.timeframe=tf;
@@ -1853,7 +1867,7 @@ function resetAll(){
     cat:{metric:'net',sellType:'in',chan:'all',rowGroup:'category-customer',timeframe:'l12',expanded:new Set()},
     hs:{metric:'net',sellType:'in',chan:'all',year:'2025',show:'all',topN:20,trendAxis:'month',sortCol:'val',sortDir:1,timeframe:'l12',viewBy:'all'},
     ue:{metric:'cost',sellType:'in',chan:'all',rowGroup:'item-customer',expanded:new Set()},
-    funnel:{metric:'net',sellType:'in',chan:'all'}
+    funnel:{metric:'net',sellType:'in',chan:'all',viewBy:'franchise'}
   };
   document.getElementById('item-search').value='';
   document.querySelectorAll('#year-filters input,#quarter-filters input,#store-filters input,#cat-filters input').forEach(cb=>cb.checked=true);
@@ -1899,6 +1913,7 @@ function resetAll(){
   document.querySelectorAll('#funnel-metric-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='net'));
   document.querySelectorAll('#funnel-selltype-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='in'));
   document.querySelectorAll('#funnel-chan-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='all'));
+  document.querySelectorAll('#funnel-viewby-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='franchise'));
   document.getElementById('funnel-selltype-grp').style.opacity='1';
   document.getElementById('funnel-selltype-grp').style.pointerEvents='auto';
   updateStoreAllBtn();updateCatAllBtn();
@@ -2392,7 +2407,7 @@ function cleanRow(r){
 }
 
 async function loadData(){
-  if(CSV_URL.indexOf('https://docs.google.com/spreadsheets/d/e/2PACX-1vRtN1p2PmGyiDPadsGeP7hnt4PPZpB46mpEFvV5_VERlvdNlURuGgB9iwV0_VUwTkxChEeLybRgNrZw/pubhtml?gid=0&single=true') !== -1){
+  if(CSV_URL.indexOf('PASTE_YOUR_PUBLISHED_CSV_URL_HERE') !== -1){
     showLoadError('Set CSV_URL near the top of the script to your published Google Sheets CSV link.');
     return;
   }
