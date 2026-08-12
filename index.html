@@ -256,8 +256,8 @@ tbody td:first-child{text-align:left;font-weight:500;}
   <div class="sidebar-section">
     <span class="section-label">Time Axis</span>
     <div style="display:flex;gap:3px;flex-wrap:wrap">
-      <button class="time-btn" onclick="setTimeAxis(&#39;month&#39;)" id="t-month">Monthly</button>
-      <button class="time-btn active" onclick="setTimeAxis(&#39;quarter&#39;)" id="t-quarter">Quarterly</button>
+      <button class="time-btn active" onclick="setTimeAxis(&#39;month&#39;)" id="t-month">Monthly</button>
+      <button class="time-btn" onclick="setTimeAxis(&#39;quarter&#39;)" id="t-quarter">Quarterly</button>
       <button class="time-btn" onclick="setTimeAxis(&#39;year&#39;)" id="t-year">Annual</button>
     </div>
   </div>
@@ -784,7 +784,7 @@ tbody td:first-child{text-align:left;font-weight:500;}
    DATA SOURCE — published Google Sheets CSV
    ============================================================ */
 // Paste the "Publish to web" CSV link for your Dashboard CSV tab here.
-const CSV_URL = "PASTE_YOUR_PUBLISHED_CSV_URL_HERE";
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRtN1p2PmGyiDPadsGeP7hnt4PPZpB46mpEFvV5_VERlvdNlURuGgB9iwV0_VUwTkxChEeLybRgNrZw/pub?gid=0&single=true&output=csv";
 
 let RAW_DATA = [];
 let ALL_STORES = [], ALL_CATS = [], ALL_YEARS = [], ALL_YMS = [];
@@ -1652,6 +1652,16 @@ function renderTimeChart(data){
       {label:'eCommerce',data:allYMs.map(ym=>sum(byYMe[ym]||[],m)),borderColor:'#9cba8e',backgroundColor:'#9cba8e22',fill:true,tension:0.35,pointRadius:2,borderWidth:2},
       {label:'Retail',   data:allYMs.map(ym=>sum(byYMr[ym]||[],m)),borderColor:'#7ab5c8',backgroundColor:'#7ab5c822',fill:true,tension:0.35,pointRadius:2,borderWidth:2}
     ];
+    if(compPoints.some(v=>v!==null)){
+      const compEData=compData.filter(r=>r.Channel==='eCommerce');
+      const compRData=compData.filter(r=>r.Channel==='Retail');
+      const byYMcompE=groupBy(compEData,'YM'), byYMcompR=groupBy(compRData,'YM');
+      const compLabel = OV.comp==='py' ? 'Prior Year' : 'Prior Period';
+      const ecommCompPoints = allYMs.map(ym=>{ const cy=getCompYmForPoint(ym,allYMs.length); return byYMcompE[cy] ? sum(byYMcompE[cy],m) : null; });
+      const retailCompPoints = allYMs.map(ym=>{ const cy=getCompYmForPoint(ym,allYMs.length); return byYMcompR[cy] ? sum(byYMcompR[cy],m) : null; });
+      ds_ecomm.push({label:`eCommerce (${compLabel})`,data:ecommCompPoints,borderColor:'#9cba8e',backgroundColor:'transparent',borderDash:[6,4],fill:false,tension:0.35,pointRadius:0,borderWidth:1.5,spanGaps:true});
+      ds_ecomm.push({label:`Retail (${compLabel})`,data:retailCompPoints,borderColor:'#7ab5c8',backgroundColor:'transparent',borderDash:[6,4],fill:false,tension:0.35,pointRadius:0,borderWidth:1.5,spanGaps:true});
+    }
     if(el_ecomm) el_ecomm.textContent='eCOMM vs RETAIL';
     mkChart('timeChart-ecomm','line',allYMs,ds_ecomm,{scales:{x:XS,y:YS},_interaction:INTERACTION_INDEX});
 
