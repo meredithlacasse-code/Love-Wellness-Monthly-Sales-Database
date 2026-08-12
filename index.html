@@ -238,6 +238,30 @@ tbody td:first-child{text-align:left;font-weight:500;}
 <div class="app">
 <aside class="sidebar">
   <div class="sidebar-section">
+    <span class="section-label">Period</span>
+    <div class="pill-group" id="ov-period-grp" style="flex-wrap:wrap">
+      <button class="pill-btn active" data-val="cur_month" onclick="setOvPeriod(&#39;cur_month&#39;)">Current Month</button>
+      <button class="pill-btn" data-val="cur_quarter" onclick="setOvPeriod(&#39;cur_quarter&#39;)">Current Quarter</button>
+      <button class="pill-btn" data-val="ytd" onclick="setOvPeriod(&#39;ytd&#39;)">YTD</button>
+      <button class="pill-btn" data-val="l12m" onclick="setOvPeriod(&#39;l12m&#39;)">L12M</button>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <span class="section-label">Compare</span>
+    <div class="pill-group" id="ov-comp-grp" style="flex-wrap:wrap">
+      <button class="pill-btn active" data-val="py" onclick="setOvComp(&#39;py&#39;)">PY (Prior Year)</button>
+      <button class="pill-btn" data-val="pm" onclick="setOvComp(&#39;pm&#39;)">PP (Prior Period)</button>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <span class="section-label">Time Axis</span>
+    <div style="display:flex;gap:3px;flex-wrap:wrap">
+      <button class="time-btn" onclick="setTimeAxis(&#39;month&#39;)" id="t-month">Monthly</button>
+      <button class="time-btn active" onclick="setTimeAxis(&#39;quarter&#39;)" id="t-quarter">Quarterly</button>
+      <button class="time-btn" onclick="setTimeAxis(&#39;year&#39;)" id="t-year">Annual</button>
+    </div>
+  </div>
+  <div class="sidebar-section">
     <span class="section-label">Metric</span>
     <div class="metric-toggle">
       <button class="metric-btn active" onclick="setMetric(&#39;net&#39;)" id="m-net">Net Sales ($)</button>
@@ -292,27 +316,7 @@ tbody td:first-child{text-align:left;font-weight:500;}
 
 <!-- ======== TAB 1: OVERVIEW ======== -->
 <div class="panel active" id="panel-overview">
-  <!-- Period + Comparison Controls Bar -->
-  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:white;border:1px solid var(--line);border-radius:10px;padding:10px 16px;margin-bottom:2px">
-    <div style="display:flex;align-items:center;gap:8px">
-      <span style="font-size:10px;letter-spacing:0.12em;color:var(--muted);text-transform:uppercase">Period</span>
-      <div class="pill-group" id="ov-period-grp">
-        <button class="pill-btn active" data-val="cur_month" onclick="setOvPeriod(&#39;cur_month&#39;)">Current Month</button>
-        <button class="pill-btn" data-val="cur_quarter" onclick="setOvPeriod(&#39;cur_quarter&#39;)">Current Quarter</button>
-        <button class="pill-btn" data-val="ytd" onclick="setOvPeriod(&#39;ytd&#39;)">YTD</button>
-        <button class="pill-btn" data-val="l12m" onclick="setOvPeriod(&#39;l12m&#39;)">L12M</button>
-      </div>
-    </div>
-    <div style="width:1px;height:18px;background:var(--line)"></div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <span style="font-size:10px;letter-spacing:0.12em;color:var(--muted);text-transform:uppercase">Compare</span>
-      <div class="pill-group" id="ov-comp-grp">
-        <button class="pill-btn active" data-val="py" onclick="setOvComp(&#39;py&#39;)">PY (Prior Year)</button>
-        <button class="pill-btn" data-val="pm" onclick="setOvComp(&#39;pm&#39;)">PP (Prior Period)</button>
-      </div>
-    </div>
-    <div style="margin-left:auto;font-size:10px;color:var(--muted)" id="ov-period-label"></div>
-  </div>
+  <div style="text-align:right;font-size:10px;color:var(--muted);margin-bottom:2px" id="ov-period-label"></div>
   <!-- KPI cards removed -->
   <span id="kpi-net" style="display:none"></span>
   <span id="kpi-gross" style="display:none"></span>
@@ -324,15 +328,6 @@ tbody td:first-child{text-align:left;font-weight:500;}
   <span id="kpi-net-sub" style="display:none"></span>
   <span id="kpi-gross-sub" style="display:none"></span>
   <span id="kpi-rows-sub" style="display:none"></span>
-  <!-- Time axis selector shared across all 3 charts -->
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-    <span style="font-size:10px;letter-spacing:0.12em;color:var(--muted);text-transform:uppercase">Time Axis</span>
-    <div style="display:flex;gap:3px">
-      <button class="time-btn" onclick="setTimeAxis(&#39;month&#39;)" id="t-month">Monthly</button>
-      <button class="time-btn active" onclick="setTimeAxis(&#39;quarter&#39;)" id="t-quarter">Quarterly</button>
-      <button class="time-btn" onclick="setTimeAxis(&#39;year&#39;)" id="t-year">Annual</button>
-    </div>
-  </div>
 
   <!-- Chart 1: Total -->
   <div class="chart-card" style="margin-bottom:12px">
@@ -431,18 +426,6 @@ tbody td:first-child{text-align:left;font-weight:500;}
     </div>
 
     <!-- TOOLBAR ROW 2: timeframe -->
-    <div class="hm-toolbar">
-      <div class="hm-toolbar-group">
-        <span class="ctrl-label">Period</span>
-        <div class="pill-group" id="bc-period-grp">
-          <button class="pill-btn active" data-val="cur_month" onclick="setSharedPeriod(&#39;cur_month&#39;)">Current Month</button>
-          <button class="pill-btn" data-val="cur_quarter" onclick="setSharedPeriod(&#39;cur_quarter&#39;)">Current Quarter</button>
-          <button class="pill-btn" data-val="ytd" onclick="setSharedPeriod(&#39;ytd&#39;)">YTD</button>
-          <button class="pill-btn" data-val="l12m" onclick="setSharedPeriod(&#39;l12m&#39;)">L12M</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Customer filter pills -->
     <div class="cust-pill-wrap" id="bc-cust-pills"></div>
 
@@ -502,18 +485,6 @@ tbody td:first-child{text-align:left;font-weight:500;}
       </div>
     </div>
 
-    <div class="hm-toolbar">
-      <div class="hm-toolbar-group">
-        <span class="ctrl-label">Period</span>
-        <div class="pill-group" id="cat-period-grp">
-          <button class="pill-btn active" data-val="cur_month" onclick="setSharedPeriod(&#39;cur_month&#39;)">Current Month</button>
-          <button class="pill-btn" data-val="cur_quarter" onclick="setSharedPeriod(&#39;cur_quarter&#39;)">Current Quarter</button>
-          <button class="pill-btn" data-val="ytd" onclick="setSharedPeriod(&#39;ytd&#39;)">YTD</button>
-          <button class="pill-btn" data-val="l12m" onclick="setSharedPeriod(&#39;l12m&#39;)">L12M</button>
-        </div>
-      </div>
-    </div>
-
     <div class="heatmap-wrap" id="cat-heatmap-wrap"></div>
     <div class="hm-legend">
       <span style="color:var(--muted);font-size:10px">Low</span>
@@ -566,18 +537,6 @@ tbody td:first-child{text-align:left;font-weight:500;}
       </div>
     </div>
 
-    <div class="hm-toolbar">
-      <div class="hm-toolbar-group">
-        <span class="ctrl-label">Period</span>
-        <div class="pill-group" id="ue-period-grp">
-          <button class="pill-btn active" data-val="cur_month" onclick="setSharedPeriod(&#39;cur_month&#39;)">Current Month</button>
-          <button class="pill-btn" data-val="cur_quarter" onclick="setSharedPeriod(&#39;cur_quarter&#39;)">Current Quarter</button>
-          <button class="pill-btn" data-val="ytd" onclick="setSharedPeriod(&#39;ytd&#39;)">YTD</button>
-          <button class="pill-btn" data-val="l12m" onclick="setSharedPeriod(&#39;l12m&#39;)">L12M</button>
-        </div>
-      </div>
-    </div>
-
     <div class="heatmap-wrap" id="ue-heatmap-wrap"></div>
     <div class="hm-legend">
       <span style="color:var(--muted);font-size:10px">Low</span>
@@ -626,17 +585,6 @@ tbody td:first-child{text-align:left;font-weight:500;}
         <div class="pill-group" id="funnel-viewby-grp">
           <button class="pill-btn active" data-val="franchise" onclick="setFunnelViewBy(&#39;franchise&#39;)">Franchise</button>
           <button class="pill-btn" data-val="item" onclick="setFunnelViewBy(&#39;item&#39;)">Product</button>
-        </div>
-      </div>
-    </div>
-    <div class="hm-toolbar">
-      <div class="hm-toolbar-group">
-        <span class="ctrl-label">Period</span>
-        <div class="pill-group" id="funnel-period-grp">
-          <button class="pill-btn active" data-val="cur_month" onclick="setSharedPeriod(&#39;cur_month&#39;)">Current Month</button>
-          <button class="pill-btn" data-val="cur_quarter" onclick="setSharedPeriod(&#39;cur_quarter&#39;)">Current Quarter</button>
-          <button class="pill-btn" data-val="ytd" onclick="setSharedPeriod(&#39;ytd&#39;)">YTD</button>
-          <button class="pill-btn" data-val="l12m" onclick="setSharedPeriod(&#39;l12m&#39;)">L12M</button>
         </div>
       </div>
     </div>
@@ -725,16 +673,6 @@ tbody td:first-child{text-align:left;font-weight:500;}
           <button class="pill-btn" data-val="franchise" onclick="setHSViewBy(&#39;franchise&#39;)">Franchise</button>
           <button class="pill-btn" data-val="format" onclick="setHSViewBy(&#39;format&#39;)">Format</button>
         </div>
-      </div>
-    </div>
-    <!-- TIMEFRAME ROW -->
-    <div style="padding:8px 0 4px 0">
-      <span class="ctrl-label" style="margin-bottom:4px;display:block">Period</span>
-      <div class="pill-group" id="hs-period-grp">
-        <button class="pill-btn active" data-val="cur_month" onclick="setSharedPeriod(&#39;cur_month&#39;)">Current Month</button>
-        <button class="pill-btn" data-val="cur_quarter" onclick="setSharedPeriod(&#39;cur_quarter&#39;)">Current Quarter</button>
-        <button class="pill-btn" data-val="ytd" onclick="setSharedPeriod(&#39;ytd&#39;)">YTD</button>
-        <button class="pill-btn" data-val="l12m" onclick="setSharedPeriod(&#39;l12m&#39;)">L12M</button>
       </div>
     </div>
   </div>
@@ -846,7 +784,7 @@ tbody td:first-child{text-align:left;font-weight:500;}
    DATA SOURCE — published Google Sheets CSV
    ============================================================ */
 // Paste the "Publish to web" CSV link for your Dashboard CSV tab here.
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRtN1p2PmGyiDPadsGeP7hnt4PPZpB46mpEFvV5_VERlvdNlURuGgB9iwV0_VUwTkxChEeLybRgNrZw/pub?gid=0&single=true&output=csv";
+const CSV_URL = "PASTE_YOUR_PUBLISHED_CSV_URL_HERE";
 
 let RAW_DATA = [];
 let ALL_STORES = [], ALL_CATS = [], ALL_YEARS = [], ALL_YMS = [];
@@ -994,16 +932,8 @@ function setOvPeriod(v){
 }
 // Syncs all period pill groups (overview + bc + cat + hs) to the given period value
 function syncAllPeriodPills(v){
-  ['ov-period-grp','bc-period-grp','cat-period-grp','hs-period-grp','ue-period-grp','funnel-period-grp'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.querySelectorAll('.pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===v));
-  });
-}
-function setSharedPeriod(v){
-  OV.period=v;
-  syncAllPeriodPills(v);
-  syncSidebarToOvPeriod();
-  renderAll();
+  // Period now lives in one place (the sidebar) rather than duplicated per tab.
+  document.querySelectorAll('#ov-period-grp .pill-btn').forEach(b=>b.classList.toggle('active',b.dataset.val===v));
 }
 function setOvComp(v){
   OV.comp=v;
@@ -1143,13 +1073,18 @@ function hmTextColor(val,rowMax){
 /* ============================================================
    TOOLTIP
 ============================================================ */
-function showTip(e,label,ym,val,rowTotal,grandTotal,metric){
-  const [y,m]=ym.split('-');
+function fmtColLabel(key){
+  if(S.timeAxis==='year') return key;
+  if(S.timeAxis==='quarter'){ const [y,q]=key.split(' '); return `${q} ${y}`; }
+  const [y,m]=key.split('-');
   const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${MONTHS[+m-1]} ${y}`;
+}
+function showTip(e,label,col,val,rowTotal,grandTotal,metric){
   const pRow=rowTotal?(val/rowTotal*100).toFixed(1):0;
   const pGrand=grandTotal?(val/grandTotal*100).toFixed(1):0;
   const t=document.getElementById('hm-tooltip');
-  t.innerHTML=`<strong>${label}</strong>${MONTHS[+m-1]} ${y}<br>${fmtFull(val,metric)}<br><span style="opacity:0.65">${pRow}% of row · ${pGrand}% of total</span>`;
+  t.innerHTML=`<strong>${label}</strong>${fmtColLabel(col)}<br>${fmtFull(val,metric)}<br><span style="opacity:0.65">${pRow}% of row · ${pGrand}% of total</span>`;
   t.style.display='block';
   t.style.left=(e.clientX+14)+'px'; t.style.top=(e.clientY-10)+'px';
 }
@@ -1175,9 +1110,14 @@ function renderExpandableHeatmap(containerId, rows, colKeys, expandedSet, onTogg
   // be mathematically wrong (summing averages isn't an average).
   const grandTotal = overallOverride ? overallOverride.total : rows.filter(r=>r.isGroup).reduce((s,r)=>s+r.total,0);
 
-  function fmtCol(ym){
-    const [y,m]=ym.split('-');
-    const M=['J','F','M','A','M','J','J','A','S','O','N','D'];
+  function fmtCol(key){
+    if(S.timeAxis==='year') return key;
+    if(S.timeAxis==='quarter'){
+      const [y,q]=key.split(' ');
+      return `<span style="display:block;font-size:8px;opacity:0.6">${y}</span>${q}`;
+    }
+    const [y,m]=key.split('-');
+    const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return `<span style="display:block;font-size:8px;opacity:0.6">${y}</span>${M[+m-1]}`;
   }
 
@@ -1256,13 +1196,14 @@ function renderExpandableHeatmap(containerId, rows, colKeys, expandedSet, onTogg
 ============================================================ */
 function buildRows(data, groupKey, childKey, colKeys, metric){
   const mk_ = MK[metric];
+  const colSet=new Set(colKeys);
   // aggregate by group
   const gMap={};
   for(const r of data){
     const g=r[groupKey]||'(none)';
     const c=r[childKey]||'(none)';
-    const col=r.YM;
-    if(!colKeys.includes(col)) continue;
+    const col=bucketKeyForYM(r.YM, S.timeAxis);
+    if(!colSet.has(col)) continue;
     if(!gMap[g]) gMap[g]={key:g,isGroup:true,data:{},total:0,childMap:{}};
     gMap[g].data[col]=(gMap[g].data[col]||0)+(r[mk_]||0);
     gMap[g].total+=(r[mk_]||0);
@@ -1288,12 +1229,13 @@ function buildRows(data, groupKey, childKey, colKeys, metric){
 ============================================================ */
 function buildUERows(data, groupKey, childKey, colKeys, metric){
   const gMap={};
+  const colSet=new Set(colKeys);
   const ovNum={}, ovDen={}; let ovTotNum=0, ovTotDen=0;
   for(const r of data){
     const g=r[groupKey]||'(none)';
     const c=r[childKey]||'(none)';
-    const col=r.YM;
-    if(!colKeys.includes(col)) continue;
+    const col=bucketKeyForYM(r.YM, S.timeAxis);
+    if(!colSet.has(col)) continue;
     const units = r.Units||0;
     const num = metric==='cost' ? (r.COGS||0) : (r.SRP||0)*units;
     if(!gMap[g]) gMap[g]={key:g,isGroup:true,data:{},total:0,childMap:{},_num:{},_den:{},_totNum:0,_totDen:0};
@@ -1354,10 +1296,11 @@ function ovPeriodToColKeys(){
 
 function renderBCTab(){
   const bc=S.bc;
-  const colKeys=ovPeriodToColKeys();
-  const colSet=new Set(colKeys);
-  const tfYears = new Set(colKeys.map(ym=>parseInt(ym.split('-')[0])));
-  const tfQuarters = new Set(colKeys.map(ym=>{const mo=parseInt(ym.split('-')[1]);return mo<=3?'Q1':mo<=6?'Q2':mo<=9?'Q3':'Q4';}));
+  const rawYMs=ovPeriodToColKeys();
+  const colSet=new Set(rawYMs);
+  const colKeys=bucketColKeys(rawYMs, S.timeAxis);
+  const tfYears = new Set(rawYMs.map(ym=>parseInt(ym.split('-')[0])));
+  const tfQuarters = new Set(rawYMs.map(ym=>{const mo=parseInt(ym.split('-')[1]);return mo<=3?'Q1':mo<=6?'Q2':mo<=9?'Q3':'Q4';}));
   const data=getFilteredForTab({chan:bc.chan, stype:bc.sellType, years:tfYears, quarters:tfQuarters})
     .filter(r=>colSet.has(r.YM) && bc.custFilter.has(r.Customer));
   const [groupKey,childKey]=bc.rowGroup.split('-').map(k=>({
@@ -1373,10 +1316,11 @@ function renderBCTab(){
 ============================================================ */
 function renderCatTab(){
   const cat=S.cat;
-  const colKeys=ovPeriodToColKeys();
-  const colSet=new Set(colKeys);
-  const tfYears = new Set(colKeys.map(ym=>parseInt(ym.split('-')[0])));
-  const tfQuarters = new Set(colKeys.map(ym=>{const mo=parseInt(ym.split('-')[1]);return mo<=3?'Q1':mo<=6?'Q2':mo<=9?'Q3':'Q4';}));
+  const rawYMs=ovPeriodToColKeys();
+  const colSet=new Set(rawYMs);
+  const colKeys=bucketColKeys(rawYMs, S.timeAxis);
+  const tfYears = new Set(rawYMs.map(ym=>parseInt(ym.split('-')[0])));
+  const tfQuarters = new Set(rawYMs.map(ym=>{const mo=parseInt(ym.split('-')[1]);return mo<=3?'Q1':mo<=6?'Q2':mo<=9?'Q3':'Q4';}));
   let data=getFilteredForTab({chan:cat.chan, stype:cat.sellType, years:tfYears, quarters:tfQuarters})
     .filter(r=>colSet.has(r.YM));
   const [groupKey,childKey]=cat.rowGroup.split('-').map(k=>({
@@ -1392,10 +1336,11 @@ function renderCatTab(){
 ============================================================ */
 function renderUnitEconTab(){
   const ue=S.ue;
-  const colKeys=ovPeriodToColKeys();
-  const colSet=new Set(colKeys);
-  const tfYears = new Set(colKeys.map(ym=>parseInt(ym.split('-')[0])));
-  const tfQuarters = new Set(colKeys.map(ym=>{const mo=parseInt(ym.split('-')[1]);return mo<=3?'Q1':mo<=6?'Q2':mo<=9?'Q3':'Q4';}));
+  const rawYMs=ovPeriodToColKeys();
+  const colSet=new Set(rawYMs);
+  const colKeys=bucketColKeys(rawYMs, S.timeAxis);
+  const tfYears = new Set(rawYMs.map(ym=>parseInt(ym.split('-')[0])));
+  const tfQuarters = new Set(rawYMs.map(ym=>{const mo=parseInt(ym.split('-')[1]);return mo<=3?'Q1':mo<=6?'Q2':mo<=9?'Q3':'Q4';}));
   const data=getFilteredForTab({chan:ue.chan, stype:ue.sellType, years:tfYears, quarters:tfQuarters})
     .filter(r=>colSet.has(r.YM));
   const [groupKey,childKey]=ue.rowGroup.split('-').map(k=>({item:'Item',customer:'Customer'}[k]));
@@ -1641,6 +1586,24 @@ function renderKPIs(data){
 function monthToQ(month){ return month<=3?'Q1':month<=6?'Q2':month<=9?'Q3':'Q4'; }
 function recordYQ(r){ const q=r.Quarter||monthToQ(r.Month); return `${r.Year} ${q}`; }
 
+// Buckets a raw "YYYY-MM" key into the column granularity the heatmaps
+// should group by, per the global Time Axis control.
+function bucketKeyForYM(ym, timeAxis){
+  const [y,m]=ym.split('-');
+  if(timeAxis==='year') return y;
+  if(timeAxis==='quarter') return `${y} ${monthToQ(parseInt(m))}`;
+  return ym;
+}
+// Ordered, de-duplicated list of bucket keys for a set of raw YMs.
+function bucketColKeys(yms, timeAxis){
+  const seen=new Set(), out=[];
+  for(const ym of yms){
+    const k=bucketKeyForYM(ym, timeAxis);
+    if(!seen.has(k)){ seen.add(k); out.push(k); }
+  }
+  return out;
+}
+
 function renderTimeChart(data){
   const m=MK[S.metric];
   const acf=OV.acFilter;
@@ -1665,8 +1628,10 @@ function renderTimeChart(data){
     const ds_total=[{label:'Total',data:allYMs.map(ym=>sum(byYM[ym]||[],m)),borderColor:'#e8856a',backgroundColor:'#e8856a22',fill:true,tension:0.35,pointRadius:3,borderWidth:2.5}];
     // Comparison overlay (PY/PP) — index-aligned with allYMs so each point sits
     // directly under its current-period counterpart, regardless of which
-    // comparison YMs actually exist in the data.
-    const compData = getFiltered();
+    // comparison YMs actually exist in the data. Must bypass the sidebar's
+    // Year/Quarter checkboxes here since those are auto-synced to the CURRENT
+    // period and would wrongly exclude legitimate comparison-period months.
+    const compData = getFilteredForTab({years:new Set(ALL_YEARS), quarters:new Set(ALL_QUARTERS)});
     const byYMcompAll = groupBy(compData,'YM');
     const compPoints = allYMs.map(ym=>{
       const cy = getCompYmForPoint(ym, allYMs.length);
@@ -2446,7 +2411,7 @@ function cleanRow(r){
 }
 
 async function loadData(){
-  if(CSV_URL.indexOf('PASTE_YOUR_PUBLISHED_CSV_URL_HERE') !== -1){
+  if(CSV_URL.indexOf('https://docs.google.com/spreadsheets/d/e/2PACX-1vRtN1p2PmGyiDPadsGeP7hnt4PPZpB46mpEFvV5_VERlvdNlURuGgB9iwV0_VUwTkxChEeLybRgNrZw/pub?gid=0&single=true&output=csv') !== -1){
     showLoadError('Set CSV_URL near the top of the script to your published Google Sheets CSV link.');
     return;
   }
