@@ -2421,8 +2421,11 @@ function cleanRow(r){
 }
 
 async function loadData(){
-  if(CSV_URL.indexOf('https://docs.google.com/spreadsheets/d/e/2PACX-1vRtN1p2PmGyiDPadsGeP7hnt4PPZpB46mpEFvV5_VERlvdNlURuGgB9iwV0_VUwTkxChEeLybRgNrZw/pub?gid=0&single=true&output=csv') !== -1){
-    showLoadError('Set CSV_URL near the top of the script to your published Google Sheets CSV link.');
+  // Checks the URL's *shape* rather than matching the literal placeholder text —
+  // a plain substring check breaks if someone find-and-replaces the placeholder
+  // everywhere in the file, which also rewrites this check into a tautology.
+  if(!/^https?:\/\//i.test(CSV_URL)){
+    showLoadError('https://docs.google.com/spreadsheets/d/e/2PACX-1vRtN1p2PmGyiDPadsGeP7hnt4PPZpB46mpEFvV5_VERlvdNlURuGgB9iwV0_VUwTkxChEeLybRgNrZw/pub?gid=0&single=true&output=csv');
     return;
   }
   setRefreshing(true);
