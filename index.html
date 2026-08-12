@@ -933,6 +933,20 @@ function getCompYMs(curYMs){
   return [];
 }
 
+// Same PY/PP math as getCompYMs, but for a single YM with no existence
+// filter — used when the caller needs the result index-aligned 1:1 with
+// an x-axis label array (a missing comp month becomes null, not a gap in the array).
+function getCompYmForPoint(ym, windowLen){
+  const [y,m]=ym.split('-');
+  if(OV.comp==='py') return `${parseInt(y)-1}-${m}`;
+  if(OV.comp==='pm'){
+    let yr2=parseInt(y), mo2=parseInt(m)-windowLen;
+    while(mo2<=0){mo2+=12;yr2--;}
+    return `${yr2}-${String(mo2).padStart(2,'0')}`;
+  }
+  return null;
+}
+
 function getOvPeriodLabel(){
   const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const yr = getLatestYear(), mo = getLatestMonth();
@@ -1649,6 +1663,19 @@ function renderTimeChart(data){
     // --- Chart 1: Total ---
     const byYM=groupBy(data,'YM');
     const ds_total=[{label:'Total',data:allYMs.map(ym=>sum(byYM[ym]||[],m)),borderColor:'#e8856a',backgroundColor:'#e8856a22',fill:true,tension:0.35,pointRadius:3,borderWidth:2.5}];
+    // Comparison overlay (PY/PP) — index-aligned with allYMs so each point sits
+    // directly under its current-period counterpart, regardless of which
+    // comparison YMs actually exist in the data.
+    const compData = getFiltered();
+    const byYMcompAll = groupBy(compData,'YM');
+    const compPoints = allYMs.map(ym=>{
+      const cy = getCompYmForPoint(ym, allYMs.length);
+      return byYMcompAll[cy] ? sum(byYMcompAll[cy],m) : null;
+    });
+    if(compPoints.some(v=>v!==null)){
+      const compLabel = OV.comp==='py' ? 'Prior Year' : 'Prior Period';
+      ds_total.push({label:compLabel,data:compPoints,borderColor:'#8a6f68',backgroundColor:'transparent',borderDash:[6,4],fill:false,tension:0.35,pointRadius:0,borderWidth:1.75,spanGaps:true});
+    }
     if(el_total) el_total.textContent='ALL CHANNELS · TOTAL';
     mkChart('timeChart-total','line',allYMs,ds_total,{scales:{x:XS,y:YS},_interaction:INTERACTION_INDEX});
 
